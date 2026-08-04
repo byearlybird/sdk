@@ -1,0 +1,49 @@
+{
+  "name": "@byearlybird/db-react",
+  "version": "0.0.0",
+  "description": "React bindings for DB by Early Bird.",
+  "homepage": "https://github.com/byearlybird/sdk#readme",
+  "bugs": {
+    "url": "https://github.com/byearlybird/sdk/issues"
+  },
+  "license": "MIT",
+  "author": "Early Bird",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/byearlybird/sdk.git",
+    "directory": "packages/db-react"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "test": "vp test",
+    "check": "vp check",
+    "prepublishOnly": "vp run build"
+  },
+  "devDependencies": {
+    "@byearlybird/db": "workspace:*",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "peerDependencies": {
+    "@byearlybird/db": "workspace:^",
+    "react": "^19.2.0"
+  }
+}

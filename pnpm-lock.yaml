@@ -358,6 +358,33 @@ importers:
         specifier: 'catalog:'
         version: 0.2.6(@types/node@26.1.2)(@vitest/browser-playwright@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@types/node@26.1.2)(esbuild@0.28.1)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.0))(esbuild@0.28.1)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.0)
 
+  packages/db-react:
+    devDependencies:
+      '@byearlybird/db':
+        specifier: workspace:*
+        version: link:../db
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.4(@types/react@19.2.18)
+      react:
+        specifier: 'catalog:'
+        version: 19.2.8
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.8(react@19.2.8)
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vite:
+        specifier: npm:@voidzero-dev/vite-plus-core@0.2.6
+        version: '@voidzero-dev/vite-plus-core@0.2.6(@types/node@26.1.2)(esbuild@0.28.1)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.0)'
+      vite-plus:
+        specifier: 'catalog:'
+        version: 0.2.6(@types/node@26.1.2)(@vitest/browser-playwright@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@types/node@26.1.2)(esbuild@0.28.1)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.0))(esbuild@0.28.1)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.0)
+
   packages/schema:
     dependencies:
       '@standard-schema/spec':

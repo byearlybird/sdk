@@ -7,6 +7,7 @@ A TypeScript monorepo for Early Bird's shared schemas, components, and database 
 - `@byearlybird/schema` — Schema by Early Bird, a lightweight Standard Schema library
 - `@byearlybird/components` — reusable React components and design tokens
 - `@byearlybird/db` — DB by Early Bird, a typed reactive database built on SQLite
+- `@byearlybird/db-react` — React providers and query hooks for DB by Early Bird
 - `apps/demo-client` — a private React SPA for trying the packages
 
 ## Development

@@ -4,7 +4,7 @@ A TypeScript monorepo for Early Bird's shared schemas, components, and database 
 
 ## Workspace
 
-- `@byearlybird/schema` — shared schema primitives
+- `@byearlybird/schema` — Schema by Early Bird, a lightweight Standard Schema library
 - `@byearlybird/components` — shared component primitives
 - `@byearlybird/db` — shared database primitives
 - `apps/demo-client` — a private React SPA for trying the packages

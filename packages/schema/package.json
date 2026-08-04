@@ -1,7 +1,7 @@
 {
   "name": "@byearlybird/schema",
   "version": "0.0.0",
-  "description": "Shared schema primitives for SDK by Early Bird.",
+  "description": "A lightweight Standard Schema library for strict, JSON-serializable data.",
   "homepage": "https://github.com/byearlybird/sdk#readme",
   "bugs": {
     "url": "https://github.com/byearlybird/sdk/issues"
@@ -17,6 +17,7 @@
     "dist"
   ],
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": "./dist/index.mjs",
     "./package.json": "./package.json"
@@ -31,7 +32,12 @@
     "check": "vp check",
     "prepublishOnly": "vp run build"
   },
+  "dependencies": {
+    "@standard-schema/spec": "catalog:"
+  },
   "devDependencies": {
+    "@hono/standard-validator": "catalog:",
+    "hono": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"

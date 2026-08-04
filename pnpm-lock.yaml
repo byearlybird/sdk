@@ -205,6 +205,12 @@ settings:
 
 catalogs:
   default:
+    '@hono/standard-validator':
+      specifier: ^0.3.0
+      version: 0.3.0
+    '@standard-schema/spec':
+      specifier: ^1.1.0
+      version: 1.1.0
     '@types/react':
       specifier: ^19.2.4
       version: 19.2.18
@@ -214,6 +220,9 @@ catalogs:
     '@vitejs/plugin-react':
       specifier: ^5.0.4
       version: 5.2.0
+    hono:
+      specifier: ^4.12.31
+      version: 4.12.34
     react:
       specifier: ^19.2.4
       version: 19.2.8
@@ -294,7 +303,17 @@ importers:
         version: 0.2.6(@types/node@26.1.2)(@voidzero-dev/vite-plus-core@0.2.6(@types/node@26.1.2)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.0))(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.0)
 
   packages/schema:
+    dependencies:
+      '@standard-schema/spec':
+        specifier: 'catalog:'
+        version: 1.1.0
     devDependencies:
+      '@hono/standard-validator':
+        specifier: 'catalog:'
+        version: 0.3.0(@standard-schema/spec@1.1.0)(hono@4.12.34)
+      hono:
+        specifier: 'catalog:'
+        version: 4.12.34
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -396,6 +415,12 @@ packages:
 
   '@blazediff/core@1.9.1':
     resolution: {integrity: sha512-ehg3jIkYKulZh+8om/O25vkvSsXXwC+skXmyA87FFx6A/45eqOkZsBltMw/TVteb0mloiGT8oGRTcjRAz66zaA==}
+
+  '@hono/standard-validator@0.3.0':
+    resolution: {integrity: sha512-tHLKEjKXDcHImj0XTFWW4Hr0ev+1G5GxnBZrGdpg/7NLy9s9meFPTSCOkw++ZzZKom3FjrMw2e0nFQpPPvwUVQ==}
+    peerDependencies:
+      '@standard-schema/spec': ^1.0.0
+      hono: '>=4.11.2'
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -1244,6 +1269,10 @@ packages:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
 
+  hono@4.12.34:
+    resolution: {integrity: sha512-GqXJqY/xJkJmuloTrnV1ZEXG3fqte+VjkUqoRNZXcrUidiUOP4fMSIHHY4tsqZBK++kVyWmt/AAfSUuy57/eSA==}
+    engines: {node: '>=16.9.0'}
+
   jiti@2.7.0:
     resolution: {integrity: sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ==}
     hasBin: true
@@ -1696,6 +1725,11 @@ snapshots:
       '@babel/helper-validator-identifier': 7.29.7
 
   '@blazediff/core@1.9.1': {}
+
+  '@hono/standard-validator@0.3.0(@standard-schema/spec@1.1.0)(hono@4.12.34)':
+    dependencies:
+      '@standard-schema/spec': 1.1.0
+      hono: 4.12.34
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
@@ -2227,6 +2261,8 @@ snapshots:
     optional: true
 
   gensync@1.0.0-beta.2: {}
+
+  hono@4.12.34: {}
 
   jiti@2.7.0:
     optional: true

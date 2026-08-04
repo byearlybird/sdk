@@ -6,10 +6,13 @@ packages:
 catalogMode: prefer
 
 catalog:
+  "@hono/standard-validator": ^0.3.0
+  "@standard-schema/spec": ^1.1.0
   "@types/react": ^19.2.4
   "@types/react-dom": ^19.2.3
   "@vitejs/plugin-react": ^5.0.4
   "@types/node": ^24
+  hono: ^4.12.31
   react: ^19.2.4
   react-dom: ^19.2.4
   typescript: ^7.0.2

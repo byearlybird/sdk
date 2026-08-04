@@ -1,0 +1,70 @@
+.card {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  border: var(--size-px) solid var(--components-color-border);
+  border-radius: var(--components-radius-surface);
+  overflow: hidden;
+  color: var(--components-color-text);
+  background: var(--components-color-background);
+  font-family: var(--components-font-family);
+  font-size: var(--scale-00);
+  font-style: normal;
+  font-weight: var(--weight-regular);
+  line-height: var(--line-normal);
+}
+
+.card > :not(.image) {
+  grid-column: 1 / -1;
+}
+
+.header {
+  box-sizing: border-box;
+  padding: var(--size-4) var(--size-4) 0;
+}
+
+.title {
+  margin: 0;
+  color: var(--components-color-text);
+  font-family: var(--components-font-family);
+  font-size: var(--scale-2);
+  font-style: normal;
+  font-weight: var(--weight-semibold);
+  line-height: var(--line-normal);
+}
+
+.content {
+  box-sizing: border-box;
+  padding: var(--size-4);
+}
+
+.header + .content {
+  padding-top: var(--size-2);
+}
+
+.image {
+  display: block;
+  grid-row: 1 / span 2;
+  grid-column: 1;
+  align-self: center;
+  width: 100%;
+  max-width: calc(var(--size-10) * 3);
+  margin: var(--size-3) 0 var(--size-3) var(--size-3);
+  aspect-ratio: 1;
+  border-radius: var(--components-radius-surface);
+  object-fit: cover;
+}
+
+.image ~ .header {
+  grid-row: 1;
+  grid-column: 2;
+  align-self: end;
+  padding: var(--size-3) var(--size-3) 0;
+}
+
+.image ~ .content {
+  grid-row: 2;
+  grid-column: 2;
+  align-self: start;
+  padding: var(--size-2) var(--size-3) var(--size-3);
+}

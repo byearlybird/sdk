@@ -33,11 +33,11 @@
     "prepublishOnly": "vp run build"
   },
   "dependencies": {
-    "@standard-schema/spec": "catalog:"
+    "@standard-schema/spec": "^1.1.0"
   },
   "devDependencies": {
-    "@hono/standard-validator": "catalog:",
-    "hono": "catalog:",
+    "@hono/standard-validator": "^0.3.0",
+    "hono": "^4.12.31",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"

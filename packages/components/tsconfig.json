@@ -1,11 +1,14 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "lib": ["ES2023"],
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "moduleDetection": "force",
+    "types": ["node", "react", "react-dom"],
     "allowImportingTsExtensions": true,
+    "allowArbitraryExtensions": true,
     "declaration": true,
     "isolatedModules": true,
     "noEmit": true,
@@ -15,5 +18,5 @@
     "strict": true,
     "verbatimModuleSyntax": true
   },
-  "include": ["src", "tests", "vite.config.ts"]
+  "include": [".storybook", "src", "tests", "vite.config.ts"]
 }

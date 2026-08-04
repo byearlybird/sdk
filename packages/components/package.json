@@ -1,7 +1,14 @@
 {
   "name": "@byearlybird/components",
   "version": "0.0.0",
-  "description": "Shared component primitives for SDK by Early Bird.",
+  "description": "Reusable React components by Early Bird.",
+  "keywords": [
+    "component-library",
+    "components",
+    "design-system",
+    "react",
+    "typescript"
+  ],
   "homepage": "https://github.com/byearlybird/sdk#readme",
   "bugs": {
     "url": "https://github.com/byearlybird/sdk/issues"
@@ -17,9 +24,19 @@
     "dist"
   ],
   "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
-    ".": "./dist/index.mjs",
-    "./package.json": "./package.json"
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json",
+    "./tokens.css": "./dist/tokens.css",
+    "./style.css": "./dist/style.css"
   },
   "publishConfig": {
     "access": "public"
@@ -27,13 +44,38 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
     "test": "vp test",
     "check": "vp check",
     "prepublishOnly": "vp run build"
   },
+  "dependencies": {
+    "@base-ui/react": "^1.6.0",
+    "clsx": "^2.1.1",
+    "recharts": "^3.10.0"
+  },
   "devDependencies": {
+    "@fontsource-variable/karla": "5.3.0",
+    "@phosphor-icons/react": "2.1.10",
+    "@storybook/addon-a11y": "10.5.3",
+    "@storybook/addon-vitest": "10.5.3",
+    "@storybook/react-vite": "10.5.3",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitest/browser-playwright": "4.1.10",
+    "playwright": "1.61.1",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "storybook": "10.5.3",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vite-plus": "catalog:"
+    "vite-plus": "catalog:",
+    "vitest": "4.1.10"
+  },
+  "peerDependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   }
 }

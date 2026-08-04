@@ -1,0 +1,85 @@
+.backdrop {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-black) 50%, transparent);
+  opacity: 1;
+  transition: opacity var(--components-motion-duration) var(--components-motion-easing-standard);
+}
+
+.backdrop[data-starting-style],
+.backdrop[data-ending-style] {
+  opacity: 0;
+}
+
+.viewport {
+  position: fixed;
+  z-index: 1;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  overflow-y: auto;
+  padding: var(--size-4);
+  pointer-events: none;
+}
+
+.popup {
+  position: relative;
+  box-sizing: border-box;
+  width: calc(100% - (var(--size-4) * 2));
+  max-width: calc(var(--size-10) * 10);
+  max-height: calc(100dvh - (var(--size-4) * 2));
+  overflow-y: auto;
+  padding: var(--size-4);
+  border: var(--size-px) solid var(--components-color-border);
+  border-radius: var(--components-radius-surface);
+  outline: 0;
+  color: var(--components-color-text);
+  background: var(--components-color-background);
+  font-family: var(--components-font-family);
+  font-size: var(--scale-00);
+  font-style: normal;
+  font-weight: var(--weight-regular);
+  line-height: var(--line-normal);
+  pointer-events: auto;
+  transform-origin: center;
+  transition:
+    opacity var(--components-motion-duration) var(--components-motion-easing-standard),
+    transform var(--components-motion-duration) var(--components-motion-easing-standard);
+}
+
+.popup[data-starting-style],
+.popup[data-ending-style] {
+  opacity: 0;
+  transform: scale(0.98);
+}
+
+.title {
+  margin: 0;
+  color: var(--components-color-text);
+  font-family: var(--components-font-family);
+  font-size: var(--scale-2);
+  font-style: normal;
+  font-weight: var(--weight-semibold);
+  line-height: var(--line-normal);
+}
+
+.description {
+  margin: var(--size-2) 0 0;
+  color: var(--components-color-text);
+  font-family: var(--components-font-family);
+  font-size: var(--scale-00);
+  font-style: normal;
+  font-weight: var(--weight-regular);
+  line-height: var(--line-normal);
+  opacity: 0.75;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop,
+  .popup {
+    transition: none;
+  }
+}

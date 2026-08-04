@@ -1,0 +1,39 @@
+{
+  "name": "@byearlybird/components",
+  "version": "0.0.0",
+  "description": "Shared component primitives for SDK by Early Bird.",
+  "homepage": "https://github.com/byearlybird/sdk#readme",
+  "bugs": {
+    "url": "https://github.com/byearlybird/sdk/issues"
+  },
+  "license": "MIT",
+  "author": "Early Bird",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/byearlybird/sdk.git",
+    "directory": "packages/components"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "test": "vp test",
+    "check": "vp check",
+    "prepublishOnly": "vp run build"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}

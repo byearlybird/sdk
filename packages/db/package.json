@@ -1,7 +1,7 @@
 {
   "name": "@byearlybird/db",
   "version": "0.0.0",
-  "description": "Shared database primitives for SDK by Early Bird.",
+  "description": "A typed, reactive JSON document database built on SQLite.",
   "homepage": "https://github.com/byearlybird/sdk#readme",
   "bugs": {
     "url": "https://github.com/byearlybird/sdk/issues"
@@ -17,8 +17,11 @@
     "dist"
   ],
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": "./dist/index.mjs",
+    "./capacitor": "./dist/capacitor.mjs",
+    "./opfs": "./dist/opfs.mjs",
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -32,8 +35,27 @@
     "prepublishOnly": "vp run build"
   },
   "devDependencies": {
+    "@capacitor-community/sqlite": "^8.1.0",
+    "@capacitor/core": "^8.4.2",
+    "@sqlite.org/sqlite-wasm": "3.53.0-build1",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"
+  },
+  "peerDependencies": {
+    "@capacitor-community/sqlite": "^8.1.0",
+    "@capacitor/core": "^8.0.0",
+    "@sqlite.org/sqlite-wasm": "3.53.0-build1"
+  },
+  "peerDependenciesMeta": {
+    "@capacitor-community/sqlite": {
+      "optional": true
+    },
+    "@capacitor/core": {
+      "optional": true
+    },
+    "@sqlite.org/sqlite-wasm": {
+      "optional": true
+    }
   }
 }

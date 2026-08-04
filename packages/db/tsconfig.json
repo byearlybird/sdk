@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "lib": ["ES2023"],
+    "lib": ["ES2023", "DOM", "WebWorker"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "moduleDetection": "force",
     "allowImportingTsExtensions": true,
     "declaration": true,
+    "exactOptionalPropertyTypes": true,
     "isolatedModules": true,
     "noEmit": true,
     "noUnusedLocals": true,

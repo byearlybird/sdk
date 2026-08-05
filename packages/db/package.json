@@ -1,6 +1,6 @@
 {
   "name": "@byearlybird/db",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A typed, reactive JSON document database built on SQLite.",
   "homepage": "https://github.com/byearlybird/sdk#readme",
   "bugs": {

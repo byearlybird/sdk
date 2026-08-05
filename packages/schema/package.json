@@ -1,6 +1,6 @@
 {
   "name": "@byearlybird/schema",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A lightweight Standard Schema library for strict, JSON-serializable data.",
   "homepage": "https://github.com/byearlybird/sdk#readme",
   "bugs": {

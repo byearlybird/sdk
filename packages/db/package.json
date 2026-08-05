@@ -21,6 +21,7 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./capacitor": "./dist/capacitor.mjs",
+    "./http": "./dist/http.mjs",
     "./opfs": "./dist/opfs.mjs",
     "./package.json": "./package.json"
   },

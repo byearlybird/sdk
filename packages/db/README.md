@@ -84,21 +84,39 @@ the local outbox intact for retry. Synchronization pulls before it pushes, and
 concurrent calls on one synchronizer share the same run. A database supports one
 synchronization upstream for its lifetime.
 
-For local tests, share one in-memory relay between the databases that should
+Connect to an HTTP sync server with a transport that acquires a fresh bearer token
+before every request:
+
+```ts
+import { createHttpSyncTransport } from "@byearlybird/db/http";
+
+const httpTransport = createHttpSyncTransport({
+  serverUrl: "https://sync.example.com",
+  getToken: () => auth.getToken(),
+});
+
+const httpSynchronizer = createSynchronizer(database, { transport: httpTransport });
+```
+
+The HTTP transport does not schedule or retry synchronization. Failed HTTP responses
+throw `HttpSyncResponseError`, which exposes the response status and any `Retry-After`
+header.
+
+For local tests, share one in-memory transport between the databases that should
 synchronize:
 
 ```ts
-import { createInMemorySyncRelay, createInMemorySynchronizer } from "@byearlybird/db";
+import { createInMemorySyncTransport, createSynchronizer } from "@byearlybird/db";
 
-const relay = createInMemorySyncRelay();
-const firstSync = createInMemorySynchronizer(firstDatabase, relay);
-const secondSync = createInMemorySynchronizer(secondDatabase, relay);
+const transport = createInMemorySyncTransport();
+const firstSync = createSynchronizer(firstDatabase, { transport });
+const secondSync = createSynchronizer(secondDatabase, { transport });
 
 await firstSync.sync();
 await secondSync.sync();
 ```
 
-The relay is process-local and append-only. Create a new relay for each isolated test.
+The transport is process-local and append-only. Create a new transport for each isolated test.
 
 Install `@capacitor-community/sqlite` and `@capacitor/core` when using the Capacitor
 adapter. Install `@sqlite.org/sqlite-wasm` when using the OPFS adapter exported from

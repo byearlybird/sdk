@@ -1,9 +1,7 @@
-import type { Database } from "./database.ts";
 import type { SyncChange } from "./sync.ts";
-import { createSynchronizer } from "./synchronizer.ts";
-import type { SyncTransport, Synchronizer } from "./synchronizer.ts";
+import type { SyncTransport } from "./synchronizer.ts";
 
-export function createInMemorySyncRelay(): SyncTransport {
+export function createInMemorySyncTransport(): SyncTransport {
   const changes: SyncChange[] = [];
   const changeIds = new Set<string>();
 
@@ -25,11 +23,4 @@ export function createInMemorySyncRelay(): SyncTransport {
       }
     },
   };
-}
-
-export function createInMemorySynchronizer<Schema>(
-  database: Database<Schema>,
-  relay: SyncTransport,
-): Synchronizer {
-  return createSynchronizer(database, { transport: relay });
 }

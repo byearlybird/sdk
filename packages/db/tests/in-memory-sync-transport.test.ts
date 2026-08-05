@@ -1,10 +1,6 @@
 import { afterEach, describe, expect, expectTypeOf, it } from "vite-plus/test";
-import {
-  createDatabase,
-  createInMemorySyncRelay,
-  createInMemorySynchronizer,
-} from "../src/index.ts";
-import type { Database, SyncChange, Synchronizer } from "../src/index.ts";
+import { createDatabase, createInMemorySyncTransport, createSynchronizer } from "../src/index.ts";
+import type { Database, SyncChange, SyncTransport, Synchronizer } from "../src/index.ts";
 import { createNodeStorageAdapter } from "./node-storage.ts";
 
 type TestSchema = {
@@ -42,14 +38,15 @@ function createChange(id: string): LiveSyncChange {
   };
 }
 
-describe("createInMemorySynchronizer", () => {
-  it("synchronizes multiple local databases through one shared relay", async () => {
-    const relay = createInMemorySyncRelay();
+describe("createInMemorySyncTransport", () => {
+  it("synchronizes multiple local databases through one shared transport", async () => {
+    const transport = createInMemorySyncTransport();
     const first = createReplica();
     const second = createReplica();
-    const firstSynchronizer = createInMemorySynchronizer(first, relay);
-    const secondSynchronizer = createInMemorySynchronizer(second, relay);
+    const firstSynchronizer = createSynchronizer(first, { transport });
+    const secondSynchronizer = createSynchronizer(second, { transport });
 
+    expectTypeOf(transport).toEqualTypeOf<SyncTransport>();
     expectTypeOf(firstSynchronizer).toEqualTypeOf<Synchronizer>();
 
     await first.insert("tasks", "first", { title: "First" });
@@ -71,15 +68,15 @@ describe("createInMemorySynchronizer", () => {
   });
 
   it("paginates changes and deduplicates retries", async () => {
-    const relay = createInMemorySyncRelay();
+    const transport = createInMemorySyncTransport();
     const first = createChange("first");
     const second = createChange("second");
 
-    await relay.push({ changes: [first, second] });
-    await relay.push({ changes: [first] });
+    await transport.push({ changes: [first, second] });
+    await transport.push({ changes: [first] });
 
-    const firstPage = await relay.pull({ cursor: null, limit: 1 });
-    const secondPage = await relay.pull({ cursor: firstPage.cursor, limit: 1 });
+    const firstPage = await transport.pull({ cursor: null, limit: 1 });
+    const secondPage = await transport.pull({ cursor: firstPage.cursor, limit: 1 });
     expect(firstPage).toMatchObject({ changes: [first], hasMore: true });
     expect(secondPage).toMatchObject({ changes: [second], hasMore: false });
   });

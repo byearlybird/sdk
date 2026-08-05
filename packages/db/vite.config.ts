@@ -2,7 +2,7 @@ import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   pack: {
-    entry: ["src/index.ts", "src/capacitor.ts", "src/opfs.ts", "src/opfs.worker.ts"],
+    entry: ["src/index.ts", "src/capacitor.ts", "src/http.ts", "src/opfs.ts", "src/opfs.worker.ts"],
     dts: {
       tsgo: true,
     },

@@ -1,6 +1,8 @@
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import type { ReactNode, Ref } from "react";
 import { mergeClassName } from "../../utils/mergeClassName.ts";
+import type { WithRef } from "../../utils/withRef.ts";
+import { CheckIcon } from "../icons.tsx";
 import type { ButtonSize } from "../Button/Button.tsx";
 import buttonStyles from "../Button/Button.module.css";
 import styles from "./Menu.module.css";
@@ -55,9 +57,7 @@ export function MenuTrigger<Payload = unknown>({
 
 export const MenuPortal = BaseMenu.Portal;
 
-export interface MenuBackdropProps extends Omit<BaseMenu.Backdrop.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type MenuBackdropProps = WithRef<BaseMenu.Backdrop.Props, HTMLDivElement>;
 
 export function MenuBackdrop({ className, ref, ...props }: MenuBackdropProps) {
   return (
@@ -69,9 +69,7 @@ export function MenuBackdrop({ className, ref, ...props }: MenuBackdropProps) {
   );
 }
 
-export interface MenuPositionerProps extends Omit<BaseMenu.Positioner.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type MenuPositionerProps = WithRef<BaseMenu.Positioner.Props, HTMLDivElement>;
 
 export function MenuPositioner({ className, ref, sideOffset = 8, ...props }: MenuPositionerProps) {
   return (
@@ -84,9 +82,7 @@ export function MenuPositioner({ className, ref, sideOffset = 8, ...props }: Men
   );
 }
 
-export interface MenuPopupProps extends Omit<BaseMenu.Popup.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type MenuPopupProps = WithRef<BaseMenu.Popup.Props, HTMLDivElement>;
 
 export function MenuPopup({ className, ref, ...props }: MenuPopupProps) {
   return (
@@ -125,9 +121,7 @@ export function MenuContent({
   );
 }
 
-export interface MenuArrowProps extends Omit<BaseMenu.Arrow.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type MenuArrowProps = WithRef<BaseMenu.Arrow.Props, HTMLDivElement>;
 
 export function MenuArrow({ className, ref, ...props }: MenuArrowProps) {
   return (
@@ -139,9 +133,7 @@ export function MenuArrow({ className, ref, ...props }: MenuArrowProps) {
   );
 }
 
-export interface MenuItemProps extends Omit<BaseMenu.Item.Props, "ref"> {
-  ref?: Ref<HTMLElement>;
-}
+export type MenuItemProps = WithRef<BaseMenu.Item.Props, HTMLElement>;
 
 export function MenuItem({ className, ref, ...props }: MenuItemProps) {
   return (
@@ -153,9 +145,7 @@ export function MenuItem({ className, ref, ...props }: MenuItemProps) {
   );
 }
 
-export interface MenuLinkItemProps extends Omit<BaseMenu.LinkItem.Props, "ref"> {
-  ref?: Ref<Element>;
-}
+export type MenuLinkItemProps = WithRef<BaseMenu.LinkItem.Props, Element>;
 
 export function MenuLinkItem({ className, ref, ...props }: MenuLinkItemProps) {
   return (
@@ -167,9 +157,7 @@ export function MenuLinkItem({ className, ref, ...props }: MenuLinkItemProps) {
   );
 }
 
-export interface MenuSubmenuTriggerProps extends Omit<BaseMenu.SubmenuTrigger.Props, "ref"> {
-  ref?: Ref<HTMLElement>;
-}
+export type MenuSubmenuTriggerProps = WithRef<BaseMenu.SubmenuTrigger.Props, HTMLElement>;
 
 export function MenuSubmenuTrigger({ className, ref, ...props }: MenuSubmenuTriggerProps) {
   return (
@@ -186,9 +174,7 @@ export function MenuSubmenuTrigger({ className, ref, ...props }: MenuSubmenuTrig
 
 export const MenuGroup = BaseMenu.Group;
 
-export interface MenuGroupLabelProps extends Omit<BaseMenu.GroupLabel.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type MenuGroupLabelProps = WithRef<BaseMenu.GroupLabel.Props, HTMLDivElement>;
 
 export function MenuGroupLabel({ className, ref, ...props }: MenuGroupLabelProps) {
   return (
@@ -200,9 +186,7 @@ export function MenuGroupLabel({ className, ref, ...props }: MenuGroupLabelProps
   );
 }
 
-export interface MenuSeparatorProps extends Omit<BaseMenu.Separator.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type MenuSeparatorProps = WithRef<BaseMenu.Separator.Props, HTMLDivElement>;
 
 export function MenuSeparator({ className, ref, ...props }: MenuSeparatorProps) {
   return (
@@ -250,12 +234,10 @@ export function MenuCheckboxItem({
   );
 }
 
-export interface MenuCheckboxItemIndicatorProps extends Omit<
+export type MenuCheckboxItemIndicatorProps = WithRef<
   BaseMenu.CheckboxItemIndicator.Props,
-  "ref"
-> {
-  ref?: Ref<HTMLSpanElement>;
-}
+  HTMLSpanElement
+>;
 
 export function MenuCheckboxItemIndicator({
   children,
@@ -300,12 +282,10 @@ export function MenuRadioItem({ children, className, ref, ...props }: MenuRadioI
   );
 }
 
-export interface MenuRadioItemIndicatorProps extends Omit<
+export type MenuRadioItemIndicatorProps = WithRef<
   BaseMenu.RadioItemIndicator.Props,
-  "ref"
-> {
-  ref?: Ref<HTMLSpanElement>;
-}
+  HTMLSpanElement
+>;
 
 export function MenuRadioItemIndicator({ className, ref, ...props }: MenuRadioItemIndicatorProps) {
   return (
@@ -320,9 +300,7 @@ export function MenuRadioItemIndicator({ className, ref, ...props }: MenuRadioIt
   );
 }
 
-export interface MenuViewportProps extends Omit<BaseMenu.Viewport.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type MenuViewportProps = WithRef<BaseMenu.Viewport.Props, HTMLDivElement>;
 
 export function MenuViewport({ className, ref, ...props }: MenuViewportProps) {
   return (
@@ -331,19 +309,5 @@ export function MenuViewport({ className, ref, ...props }: MenuViewportProps) {
       ref={ref}
       className={mergeClassName<BaseMenu.Viewport.State>(styles.viewport, className)}
     />
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-    >
-      <path d="m3 8 3 3 7-7" />
-    </svg>
   );
 }

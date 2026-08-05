@@ -2,6 +2,8 @@ import { Combobox as BaseCombobox } from "@base-ui/react/combobox";
 import { clsx } from "clsx";
 import type { ComponentPropsWithRef, ReactNode, Ref } from "react";
 import { mergeClassName } from "../../utils/mergeClassName.ts";
+import type { WithRef } from "../../utils/withRef.ts";
+import { CaretIcon, CheckIcon } from "../icons.tsx";
 import styles from "./Combobox.module.css";
 
 export type ComboboxProps<
@@ -21,9 +23,7 @@ export function ComboboxLabel({ className, ref, ...props }: ComboboxLabelProps) 
   return <label {...props} ref={ref} className={clsx(styles.label, className)} />;
 }
 
-export interface ComboboxInputGroupProps extends Omit<BaseCombobox.InputGroup.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type ComboboxInputGroupProps = WithRef<BaseCombobox.InputGroup.Props, HTMLDivElement>;
 
 export function ComboboxInputGroup({ className, ref, ...props }: ComboboxInputGroupProps) {
   return (
@@ -50,9 +50,7 @@ export function ComboboxLeadingIcon({ children, className, ...props }: ComboboxL
   );
 }
 
-export interface ComboboxInputProps extends Omit<BaseCombobox.Input.Props, "ref"> {
-  ref?: Ref<HTMLInputElement>;
-}
+export type ComboboxInputProps = WithRef<BaseCombobox.Input.Props, HTMLInputElement>;
 
 export function ComboboxInput({ className, ref, ...props }: ComboboxInputProps) {
   return (
@@ -64,9 +62,7 @@ export function ComboboxInput({ className, ref, ...props }: ComboboxInputProps) 
   );
 }
 
-export interface ComboboxClearProps extends Omit<BaseCombobox.Clear.Props, "ref"> {
-  ref?: Ref<HTMLButtonElement>;
-}
+export type ComboboxClearProps = WithRef<BaseCombobox.Clear.Props, HTMLButtonElement>;
 
 export function ComboboxClear({
   "aria-label": ariaLabel = "Clear selection",
@@ -87,9 +83,7 @@ export function ComboboxClear({
   );
 }
 
-export interface ComboboxTriggerProps extends Omit<BaseCombobox.Trigger.Props, "ref"> {
-  ref?: Ref<HTMLButtonElement>;
-}
+export type ComboboxTriggerProps = WithRef<BaseCombobox.Trigger.Props, HTMLButtonElement>;
 
 export function ComboboxTrigger({
   "aria-label": ariaLabel = "Show options",
@@ -110,9 +104,7 @@ export function ComboboxTrigger({
   );
 }
 
-export interface ComboboxIconProps extends Omit<BaseCombobox.Icon.Props, "ref"> {
-  ref?: Ref<HTMLSpanElement>;
-}
+export type ComboboxIconProps = WithRef<BaseCombobox.Icon.Props, HTMLSpanElement>;
 
 export function ComboboxIcon({ children, className, ref, ...props }: ComboboxIconProps) {
   return (
@@ -129,9 +121,7 @@ export function ComboboxIcon({ children, className, ref, ...props }: ComboboxIco
 export const ComboboxValue = BaseCombobox.Value;
 export const ComboboxPortal = BaseCombobox.Portal;
 
-export interface ComboboxBackdropProps extends Omit<BaseCombobox.Backdrop.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type ComboboxBackdropProps = WithRef<BaseCombobox.Backdrop.Props, HTMLDivElement>;
 
 export function ComboboxBackdrop({ className, ref, ...props }: ComboboxBackdropProps) {
   return (
@@ -143,9 +133,7 @@ export function ComboboxBackdrop({ className, ref, ...props }: ComboboxBackdropP
   );
 }
 
-export interface ComboboxPositionerProps extends Omit<BaseCombobox.Positioner.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type ComboboxPositionerProps = WithRef<BaseCombobox.Positioner.Props, HTMLDivElement>;
 
 export function ComboboxPositioner({
   className,
@@ -163,9 +151,7 @@ export function ComboboxPositioner({
   );
 }
 
-export interface ComboboxPopupProps extends Omit<BaseCombobox.Popup.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type ComboboxPopupProps = WithRef<BaseCombobox.Popup.Props, HTMLDivElement>;
 
 export function ComboboxPopup({ className, ref, ...props }: ComboboxPopupProps) {
   return (
@@ -209,9 +195,7 @@ export function ComboboxContent({
   );
 }
 
-export interface ComboboxArrowProps extends Omit<BaseCombobox.Arrow.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type ComboboxArrowProps = WithRef<BaseCombobox.Arrow.Props, HTMLDivElement>;
 
 export function ComboboxArrow({ children, className, ref, ...props }: ComboboxArrowProps) {
   return (
@@ -225,9 +209,7 @@ export function ComboboxArrow({ children, className, ref, ...props }: ComboboxAr
   );
 }
 
-export interface ComboboxListProps extends Omit<BaseCombobox.List.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type ComboboxListProps = WithRef<BaseCombobox.List.Props, HTMLDivElement>;
 
 export function ComboboxList({ className, ref, ...props }: ComboboxListProps) {
   return (
@@ -261,9 +243,7 @@ export function ComboboxItem({ children, className, indicator, ref, ...props }: 
   );
 }
 
-export interface ComboboxItemIndicatorProps extends Omit<BaseCombobox.ItemIndicator.Props, "ref"> {
-  ref?: Ref<HTMLSpanElement>;
-}
+export type ComboboxItemIndicatorProps = WithRef<BaseCombobox.ItemIndicator.Props, HTMLSpanElement>;
 
 export function ComboboxItemIndicator({
   children,
@@ -288,9 +268,7 @@ export function ComboboxItemText({ className, ref, ...props }: ComboboxItemTextP
   return <span {...props} ref={ref} className={clsx(styles.itemText, className)} />;
 }
 
-export interface ComboboxEmptyProps extends Omit<BaseCombobox.Empty.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type ComboboxEmptyProps = WithRef<BaseCombobox.Empty.Props, HTMLDivElement>;
 
 export function ComboboxEmpty({ className, ref, ...props }: ComboboxEmptyProps) {
   return (
@@ -302,9 +280,7 @@ export function ComboboxEmpty({ className, ref, ...props }: ComboboxEmptyProps) 
   );
 }
 
-export interface ComboboxStatusProps extends Omit<BaseCombobox.Status.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type ComboboxStatusProps = WithRef<BaseCombobox.Status.Props, HTMLDivElement>;
 
 export function ComboboxStatus({ className, ref, ...props }: ComboboxStatusProps) {
   return (
@@ -320,9 +296,7 @@ export const ComboboxCollection = BaseCombobox.Collection;
 export const ComboboxGroup = BaseCombobox.Group;
 export const ComboboxRow = BaseCombobox.Row;
 
-export interface ComboboxGroupLabelProps extends Omit<BaseCombobox.GroupLabel.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type ComboboxGroupLabelProps = WithRef<BaseCombobox.GroupLabel.Props, HTMLDivElement>;
 
 export function ComboboxGroupLabel({ className, ref, ...props }: ComboboxGroupLabelProps) {
   return (
@@ -334,9 +308,7 @@ export function ComboboxGroupLabel({ className, ref, ...props }: ComboboxGroupLa
   );
 }
 
-export interface ComboboxSeparatorProps extends Omit<BaseCombobox.Separator.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type ComboboxSeparatorProps = WithRef<BaseCombobox.Separator.Props, HTMLDivElement>;
 
 export function ComboboxSeparator({ className, ref, ...props }: ComboboxSeparatorProps) {
   return (
@@ -348,9 +320,7 @@ export function ComboboxSeparator({ className, ref, ...props }: ComboboxSeparato
   );
 }
 
-export interface ComboboxChipsProps extends Omit<BaseCombobox.Chips.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type ComboboxChipsProps = WithRef<BaseCombobox.Chips.Props, HTMLDivElement>;
 
 export function ComboboxChips({ className, ref, ...props }: ComboboxChipsProps) {
   return (
@@ -362,9 +332,7 @@ export function ComboboxChips({ className, ref, ...props }: ComboboxChipsProps) 
   );
 }
 
-export interface ComboboxChipProps extends Omit<BaseCombobox.Chip.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type ComboboxChipProps = WithRef<BaseCombobox.Chip.Props, HTMLDivElement>;
 
 export function ComboboxChip({ className, ref, ...props }: ComboboxChipProps) {
   return (
@@ -376,9 +344,7 @@ export function ComboboxChip({ className, ref, ...props }: ComboboxChipProps) {
   );
 }
 
-export interface ComboboxChipRemoveProps extends Omit<BaseCombobox.ChipRemove.Props, "ref"> {
-  ref?: Ref<HTMLButtonElement>;
-}
+export type ComboboxChipRemoveProps = WithRef<BaseCombobox.ChipRemove.Props, HTMLButtonElement>;
 
 export function ComboboxChipRemove({
   "aria-label": ariaLabel = "Remove",
@@ -396,22 +362,6 @@ export function ComboboxChipRemove({
     >
       {children ?? <CloseIcon />}
     </BaseCombobox.ChipRemove>
-  );
-}
-
-function CaretIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="m4 6 4 4 4-4" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="m3 8 3 3 7-7" />
-    </svg>
   );
 }
 

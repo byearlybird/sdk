@@ -1,6 +1,7 @@
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import type { Ref } from "react";
 import { mergeClassName } from "../../utils/mergeClassName.ts";
+import type { WithRef } from "../../utils/withRef.ts";
 import buttonStyles from "../Button/Button.module.css";
 import styles from "./Dialog.module.css";
 
@@ -36,9 +37,7 @@ export function DialogTrigger<Payload = unknown>({
 
 export const DialogPortal = BaseDialog.Portal;
 
-export interface DialogBackdropProps extends Omit<BaseDialog.Backdrop.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type DialogBackdropProps = WithRef<BaseDialog.Backdrop.Props, HTMLDivElement>;
 
 export function DialogBackdrop({ className, ref, ...props }: DialogBackdropProps) {
   return (
@@ -50,9 +49,7 @@ export function DialogBackdrop({ className, ref, ...props }: DialogBackdropProps
   );
 }
 
-export interface DialogViewportProps extends Omit<BaseDialog.Viewport.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type DialogViewportProps = WithRef<BaseDialog.Viewport.Props, HTMLDivElement>;
 
 export function DialogViewport({ className, ref, ...props }: DialogViewportProps) {
   return (
@@ -64,9 +61,7 @@ export function DialogViewport({ className, ref, ...props }: DialogViewportProps
   );
 }
 
-export interface DialogPopupProps extends Omit<BaseDialog.Popup.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type DialogPopupProps = WithRef<BaseDialog.Popup.Props, HTMLDivElement>;
 
 export function DialogPopup({ className, ref, ...props }: DialogPopupProps) {
   return (
@@ -111,9 +106,7 @@ export function DialogContent({
   );
 }
 
-export interface DialogTitleProps extends Omit<BaseDialog.Title.Props, "ref"> {
-  ref?: Ref<HTMLHeadingElement>;
-}
+export type DialogTitleProps = WithRef<BaseDialog.Title.Props, HTMLHeadingElement>;
 
 export function DialogTitle({ className, ref, ...props }: DialogTitleProps) {
   return (
@@ -125,9 +118,7 @@ export function DialogTitle({ className, ref, ...props }: DialogTitleProps) {
   );
 }
 
-export interface DialogDescriptionProps extends Omit<BaseDialog.Description.Props, "ref"> {
-  ref?: Ref<HTMLParagraphElement>;
-}
+export type DialogDescriptionProps = WithRef<BaseDialog.Description.Props, HTMLParagraphElement>;
 
 export function DialogDescription({ className, ref, ...props }: DialogDescriptionProps) {
   return (
@@ -139,9 +130,7 @@ export function DialogDescription({ className, ref, ...props }: DialogDescriptio
   );
 }
 
-export interface DialogCloseProps extends Omit<BaseDialog.Close.Props, "ref"> {
-  ref?: Ref<HTMLButtonElement>;
-}
+export type DialogCloseProps = WithRef<BaseDialog.Close.Props, HTMLButtonElement>;
 
 export function DialogClose({ className, ref, ...props }: DialogCloseProps) {
   return (

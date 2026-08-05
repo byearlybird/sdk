@@ -1,6 +1,7 @@
 import { Drawer as BaseDrawer } from "@base-ui/react/drawer";
 import type { Ref } from "react";
 import { mergeClassName } from "../../utils/mergeClassName.ts";
+import type { WithRef } from "../../utils/withRef.ts";
 import buttonStyles from "../Button/Button.module.css";
 import styles from "./Drawer.module.css";
 
@@ -42,9 +43,7 @@ export const DrawerSwipeArea = BaseDrawer.SwipeArea;
 export const DrawerVirtualKeyboardProvider = BaseDrawer.VirtualKeyboardProvider;
 export const DrawerPortal = BaseDrawer.Portal;
 
-export interface DrawerBackdropProps extends Omit<BaseDrawer.Backdrop.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type DrawerBackdropProps = WithRef<BaseDrawer.Backdrop.Props, HTMLDivElement>;
 
 export function DrawerBackdrop({ className, ref, ...props }: DrawerBackdropProps) {
   return (
@@ -56,9 +55,7 @@ export function DrawerBackdrop({ className, ref, ...props }: DrawerBackdropProps
   );
 }
 
-export interface DrawerViewportProps extends Omit<BaseDrawer.Viewport.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type DrawerViewportProps = WithRef<BaseDrawer.Viewport.Props, HTMLDivElement>;
 
 export function DrawerViewport({ className, ref, ...props }: DrawerViewportProps) {
   return (
@@ -70,9 +67,7 @@ export function DrawerViewport({ className, ref, ...props }: DrawerViewportProps
   );
 }
 
-export interface DrawerPopupProps extends Omit<BaseDrawer.Popup.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type DrawerPopupProps = WithRef<BaseDrawer.Popup.Props, HTMLDivElement>;
 
 export function DrawerPopup({ className, ref, ...props }: DrawerPopupProps) {
   return (
@@ -144,9 +139,7 @@ export function DrawerContent({
   );
 }
 
-export interface DrawerTitleProps extends Omit<BaseDrawer.Title.Props, "ref"> {
-  ref?: Ref<HTMLHeadingElement>;
-}
+export type DrawerTitleProps = WithRef<BaseDrawer.Title.Props, HTMLHeadingElement>;
 
 export function DrawerTitle({ className, ref, ...props }: DrawerTitleProps) {
   return (
@@ -158,9 +151,7 @@ export function DrawerTitle({ className, ref, ...props }: DrawerTitleProps) {
   );
 }
 
-export interface DrawerDescriptionProps extends Omit<BaseDrawer.Description.Props, "ref"> {
-  ref?: Ref<HTMLParagraphElement>;
-}
+export type DrawerDescriptionProps = WithRef<BaseDrawer.Description.Props, HTMLParagraphElement>;
 
 export function DrawerDescription({ className, ref, ...props }: DrawerDescriptionProps) {
   return (
@@ -172,9 +163,7 @@ export function DrawerDescription({ className, ref, ...props }: DrawerDescriptio
   );
 }
 
-export interface DrawerCloseProps extends Omit<BaseDrawer.Close.Props, "ref"> {
-  ref?: Ref<HTMLButtonElement>;
-}
+export type DrawerCloseProps = WithRef<BaseDrawer.Close.Props, HTMLButtonElement>;
 
 export function DrawerClose({ className, ref, ...props }: DrawerCloseProps) {
   return (

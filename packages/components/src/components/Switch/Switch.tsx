@@ -1,6 +1,7 @@
 import { Switch as BaseSwitch } from "@base-ui/react/switch";
 import type { ReactNode, Ref } from "react";
 import { mergeClassName } from "../../utils/mergeClassName.ts";
+import type { WithRef } from "../../utils/withRef.ts";
 import styles from "./Switch.module.css";
 
 export interface SwitchProps extends Omit<BaseSwitch.Root.Props, "children" | "ref"> {
@@ -23,9 +24,7 @@ export function Switch({ className, ref, thumb, ...props }: SwitchProps) {
   );
 }
 
-export interface SwitchThumbProps extends Omit<BaseSwitch.Thumb.Props, "ref"> {
-  ref?: Ref<HTMLSpanElement>;
-}
+export type SwitchThumbProps = WithRef<BaseSwitch.Thumb.Props, HTMLSpanElement>;
 
 export function SwitchThumb({ className, ref, ...props }: SwitchThumbProps) {
   return (

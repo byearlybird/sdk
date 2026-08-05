@@ -2,6 +2,7 @@ import { Radio as BaseRadio } from "@base-ui/react/radio";
 import { RadioGroup as BaseRadioGroup } from "@base-ui/react/radio-group";
 import type { Ref } from "react";
 import { mergeClassName } from "../../utils/mergeClassName.ts";
+import type { WithRef } from "../../utils/withRef.ts";
 import styles from "./Radio.module.css";
 
 export interface RadioGroupProps<Value = unknown> extends Omit<BaseRadioGroup.Props<Value>, "ref"> {
@@ -37,9 +38,7 @@ export function Radio<Value = unknown>({ className, ref, ...props }: RadioProps<
   );
 }
 
-export interface RadioIndicatorProps extends Omit<BaseRadio.Indicator.Props, "ref"> {
-  ref?: Ref<HTMLSpanElement>;
-}
+export type RadioIndicatorProps = WithRef<BaseRadio.Indicator.Props, HTMLSpanElement>;
 
 export function RadioIndicator({ className, ref, ...props }: RadioIndicatorProps) {
   return (

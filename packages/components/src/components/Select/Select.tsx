@@ -2,6 +2,8 @@ import { Select as BaseSelect } from "@base-ui/react/select";
 import { clsx } from "clsx";
 import type { ComponentPropsWithRef, ReactNode, Ref } from "react";
 import { mergeClassName } from "../../utils/mergeClassName.ts";
+import type { WithRef } from "../../utils/withRef.ts";
+import { CaretIcon, CheckIcon } from "../icons.tsx";
 import styles from "./Select.module.css";
 
 export type SelectProps<
@@ -15,9 +17,7 @@ export function Select<Value, Multiple extends boolean | undefined = false>(
   return <BaseSelect.Root {...props} />;
 }
 
-export interface SelectLabelProps extends Omit<BaseSelect.Label.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type SelectLabelProps = WithRef<BaseSelect.Label.Props, HTMLDivElement>;
 
 export function SelectLabel({ className, ref, ...props }: SelectLabelProps) {
   return (
@@ -66,9 +66,7 @@ export function SelectLeadingIcon({ children, className, ...props }: SelectLeadi
   );
 }
 
-export interface SelectValueProps extends Omit<BaseSelect.Value.Props, "ref"> {
-  ref?: Ref<HTMLSpanElement>;
-}
+export type SelectValueProps = WithRef<BaseSelect.Value.Props, HTMLSpanElement>;
 
 export function SelectValue({ className, ref, ...props }: SelectValueProps) {
   return (
@@ -80,9 +78,7 @@ export function SelectValue({ className, ref, ...props }: SelectValueProps) {
   );
 }
 
-export interface SelectIconProps extends Omit<BaseSelect.Icon.Props, "ref"> {
-  ref?: Ref<HTMLSpanElement>;
-}
+export type SelectIconProps = WithRef<BaseSelect.Icon.Props, HTMLSpanElement>;
 
 export function SelectIcon({ children, className, ref, ...props }: SelectIconProps) {
   return (
@@ -98,9 +94,7 @@ export function SelectIcon({ children, className, ref, ...props }: SelectIconPro
 
 export const SelectPortal = BaseSelect.Portal;
 
-export interface SelectPositionerProps extends Omit<BaseSelect.Positioner.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type SelectPositionerProps = WithRef<BaseSelect.Positioner.Props, HTMLDivElement>;
 
 export function SelectPositioner({
   className,
@@ -118,9 +112,7 @@ export function SelectPositioner({
   );
 }
 
-export interface SelectPopupProps extends Omit<BaseSelect.Popup.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type SelectPopupProps = WithRef<BaseSelect.Popup.Props, HTMLDivElement>;
 
 export function SelectPopup({ className, ref, ...props }: SelectPopupProps) {
   return (
@@ -165,9 +157,7 @@ export function SelectContent({
   );
 }
 
-export interface SelectListProps extends Omit<BaseSelect.List.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type SelectListProps = WithRef<BaseSelect.List.Props, HTMLDivElement>;
 
 export function SelectList({ className, ref, ...props }: SelectListProps) {
   return (
@@ -201,9 +191,7 @@ export function SelectItem({ children, className, indicator, ref, ...props }: Se
   );
 }
 
-export interface SelectItemIndicatorProps extends Omit<BaseSelect.ItemIndicator.Props, "ref"> {
-  ref?: Ref<HTMLSpanElement>;
-}
+export type SelectItemIndicatorProps = WithRef<BaseSelect.ItemIndicator.Props, HTMLSpanElement>;
 
 export function SelectItemIndicator({
   children,
@@ -222,9 +210,7 @@ export function SelectItemIndicator({
   );
 }
 
-export interface SelectItemTextProps extends Omit<BaseSelect.ItemText.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type SelectItemTextProps = WithRef<BaseSelect.ItemText.Props, HTMLDivElement>;
 
 export function SelectItemText({ className, ref, ...props }: SelectItemTextProps) {
   return (
@@ -238,9 +224,7 @@ export function SelectItemText({ className, ref, ...props }: SelectItemTextProps
 
 export const SelectGroup = BaseSelect.Group;
 
-export interface SelectGroupLabelProps extends Omit<BaseSelect.GroupLabel.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type SelectGroupLabelProps = WithRef<BaseSelect.GroupLabel.Props, HTMLDivElement>;
 
 export function SelectGroupLabel({ className, ref, ...props }: SelectGroupLabelProps) {
   return (
@@ -252,9 +236,7 @@ export function SelectGroupLabel({ className, ref, ...props }: SelectGroupLabelP
   );
 }
 
-export interface SelectSeparatorProps extends Omit<BaseSelect.Separator.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type SelectSeparatorProps = WithRef<BaseSelect.Separator.Props, HTMLDivElement>;
 
 export function SelectSeparator({ className, ref, ...props }: SelectSeparatorProps) {
   return (
@@ -266,9 +248,7 @@ export function SelectSeparator({ className, ref, ...props }: SelectSeparatorPro
   );
 }
 
-export interface SelectScrollArrowProps extends Omit<BaseSelect.ScrollUpArrow.Props, "ref"> {
-  ref?: Ref<HTMLDivElement>;
-}
+export type SelectScrollArrowProps = WithRef<BaseSelect.ScrollUpArrow.Props, HTMLDivElement>;
 
 export function SelectScrollUpArrow({
   children,
@@ -304,25 +284,9 @@ export function SelectScrollDownArrow({
   );
 }
 
-function CaretIcon() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="m4 6 4 4 4-4" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="m3 8 3 3 7-7" />
-    </svg>
-  );
-}
-
 function ArrowIcon({ direction }: { direction: "up" | "down" }) {
   return (
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
       <path d={direction === "up" ? "m4 10 4-4 4 4" : "m4 6 4 4 4-4"} />
     </svg>
   );

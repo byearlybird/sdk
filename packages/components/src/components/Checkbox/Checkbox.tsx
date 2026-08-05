@@ -1,6 +1,7 @@
 import { Checkbox as BaseCheckbox } from "@base-ui/react/checkbox";
 import type { ReactNode, Ref } from "react";
 import { mergeClassName } from "../../utils/mergeClassName.ts";
+import type { WithRef } from "../../utils/withRef.ts";
 import styles from "./Checkbox.module.css";
 
 export interface CheckboxProps extends Omit<BaseCheckbox.Root.Props, "children" | "ref"> {
@@ -23,9 +24,7 @@ export function Checkbox({ className, indicator, ref, ...props }: CheckboxProps)
   );
 }
 
-export interface CheckboxIndicatorProps extends Omit<BaseCheckbox.Indicator.Props, "ref"> {
-  ref?: Ref<HTMLSpanElement>;
-}
+export type CheckboxIndicatorProps = WithRef<BaseCheckbox.Indicator.Props, HTMLSpanElement>;
 
 export function CheckboxIndicator({ children, className, ref, ...props }: CheckboxIndicatorProps) {
   return (

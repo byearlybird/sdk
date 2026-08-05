@@ -1,6 +1,6 @@
 .trigger[data-popup-open] {
-  border-color: var(--components-color-primary);
-  outline: var(--size-px) solid var(--components-color-primary);
+  border-color: var(--eb-color-primary);
+  outline: var(--size-px) solid var(--eb-color-primary);
   outline-offset: var(--size-px);
 }
 
@@ -19,12 +19,12 @@
   box-sizing: border-box;
   min-width: calc(var(--size-10) * 5);
   padding: var(--size-2);
-  border: var(--size-px) solid var(--components-color-border);
-  border-radius: var(--components-radius-surface);
+  border: var(--size-px) solid var(--eb-color-border);
+  border-radius: var(--eb-radius-surface);
   box-shadow: var(--shadow-elevated-content);
-  color: var(--components-color-text);
-  background: var(--components-color-background);
-  font-family: var(--components-font-family);
+  color: var(--eb-color-text);
+  background: var(--eb-color-background);
+  font-family: var(--eb-font-family);
   font-size: var(--scale-00);
   font-style: normal;
   font-weight: var(--weight-regular);
@@ -32,8 +32,8 @@
   outline: 0;
   transform-origin: var(--transform-origin);
   transition:
-    opacity var(--components-motion-duration) var(--components-motion-easing-standard),
-    transform var(--components-motion-duration) var(--components-motion-easing-standard);
+    opacity var(--eb-motion-duration) var(--eb-motion-easing-standard),
+    transform var(--eb-motion-duration) var(--eb-motion-easing-standard);
 }
 
 .popup[data-starting-style],
@@ -45,9 +45,9 @@
 .arrow {
   width: var(--size-2);
   height: var(--size-2);
-  border-block-start: var(--size-px) solid var(--components-color-border);
-  border-inline-start: var(--size-px) solid var(--components-color-border);
-  background: var(--components-color-background);
+  border-block-start: var(--size-px) solid var(--eb-color-border);
+  border-inline-start: var(--size-px) solid var(--eb-color-border);
+  background: var(--eb-color-background);
   transform: rotate(45deg);
 }
 
@@ -59,7 +59,7 @@
   min-height: var(--size-10);
   padding-inline: var(--size-2);
   gap: var(--size-2);
-  border-radius: var(--components-radius-button);
+  border-radius: var(--eb-radius-button);
   color: inherit;
   line-height: var(--line-normal);
   outline: 0;
@@ -68,7 +68,7 @@
 }
 
 .item[data-highlighted] {
-  background: var(--components-color-muted);
+  background: var(--eb-color-muted);
 }
 
 .item[data-disabled] {
@@ -123,7 +123,7 @@
 .separator {
   height: var(--size-px);
   margin-block: var(--size-2);
-  background: var(--components-color-border);
+  background: var(--eb-color-border);
 }
 
 .viewport {

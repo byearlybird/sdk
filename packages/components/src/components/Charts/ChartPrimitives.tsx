@@ -6,8 +6,8 @@ import styles from "./ChartPrimitives.module.css";
 import type { ChartFrameProps, ChartValueFormatter } from "./Chart.types.ts";
 
 export const CHART_COLORS = [
-  "var(--components-color-primary)",
-  "var(--components-color-border)",
+  "var(--eb-color-primary)",
+  "var(--eb-color-border)",
   "var(--color-red-700)",
 ] as const;
 

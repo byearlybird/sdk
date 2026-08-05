@@ -87,7 +87,7 @@ export function PieChart<TDatum extends object>({
             nameKey={(item) => String(item[nameKey])}
             outerRadius="78%"
             paddingAngle={2}
-            stroke="var(--components-color-background)"
+            stroke="var(--eb-color-background)"
             strokeWidth={2}
           >
             {data.map((item, index) => (

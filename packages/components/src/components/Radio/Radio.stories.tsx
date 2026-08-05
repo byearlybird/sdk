@@ -17,8 +17,8 @@ function ExampleRadioGroup({ disabled = false }: { disabled?: boolean }) {
       name="frequency"
       style={{
         padding: "var(--size-4)",
-        borderRadius: "var(--components-radius-surface)",
-        background: "var(--components-color-background)",
+        borderRadius: "var(--eb-radius-surface)",
+        background: "var(--eb-color-background)",
       }}
     >
       {options.map((option) => (

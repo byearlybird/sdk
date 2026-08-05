@@ -232,27 +232,27 @@ contains the public theme values and the Pollen primitives used by the library.
 
 ```css
 :root {
-  --components-color-primary: #252523;
-  --components-color-primary-text: #faf9f6;
-  --components-color-background: #faf9f6;
-  --components-color-text: #252523;
-  --components-color-text-muted: color-mix(in srgb, var(--components-color-text) 65%, transparent);
-  --components-color-border: #b8b5ad;
-  --components-color-muted: #e3e1da;
-  --components-font-family: "Karla Variable", "Karla", ui-sans-serif, system-ui, sans-serif;
-  --components-radius-surface: 2px;
-  --components-radius-input: 9999px;
-  --components-radius-button: 9999px;
-  --components-motion-duration: 200ms;
-  --components-motion-easing-standard: ease;
-  --components-motion-easing-out: ease-out;
+  --eb-color-primary: #252523;
+  --eb-color-primary-text: #faf9f6;
+  --eb-color-background: #faf9f6;
+  --eb-color-text: #252523;
+  --eb-color-text-muted: color-mix(in srgb, var(--eb-color-text) 65%, transparent);
+  --eb-color-border: #b8b5ad;
+  --eb-color-muted: #e3e1da;
+  --eb-font-family: "Karla Variable", "Karla", ui-sans-serif, system-ui, sans-serif;
+  --eb-radius-surface: 2px;
+  --eb-radius-input: 9999px;
+  --eb-radius-button: 9999px;
+  --eb-motion-duration: 200ms;
+  --eb-motion-easing-standard: ease;
+  --eb-motion-easing-out: ease-out;
 }
 ```
 
-Use `--components-color-text-muted` for secondary content such as timestamps,
+Use `--eb-color-text-muted` for secondary content such as timestamps,
 metadata, and supporting icons. It derives a translucent color from the active
 text color, so it follows both light and dark themes while preserving the color
-of the surface beneath it. Use `--components-color-muted` for muted surfaces instead.
+of the surface beneath it. Use `--eb-color-muted` for muted surfaces instead.
 
 The standard motion duration is the default for control feedback, visual-state
 changes, and larger surface or shape transitions. Pair it with the standard easing
@@ -280,12 +280,12 @@ Override any of these values after the component stylesheet:
 @import "@byearlybird/components/style.css";
 
 :root {
-  --components-color-primary: #1d4ed8;
-  --components-color-primary-text: #fff;
-  --components-font-family: "Avenir Next", ui-sans-serif, system-ui, sans-serif;
-  --components-radius-surface: 12px;
-  --components-radius-input: 6px;
-  --components-radius-button: 9999px;
+  --eb-color-primary: #1d4ed8;
+  --eb-color-primary-text: #fff;
+  --eb-font-family: "Avenir Next", ui-sans-serif, system-ui, sans-serif;
+  --eb-radius-surface: 12px;
+  --eb-radius-input: 6px;
+  --eb-radius-button: 9999px;
 }
 ```
 

@@ -15,61 +15,57 @@
   --color-black: #000;
   --color-red-700: #b91c1c;
   --shadow-elevated-content: 0 12px 28px rgb(0 0 0 / 14%), 0 3px 8px rgb(0 0 0 / 8%);
-  --components-color-primary: #252523;
-  --components-color-primary-text: #faf9f6;
-  --components-color-background: #faf9f6;
-  --components-color-text: #252523;
-  --components-color-text-muted: color-mix(in srgb, var(--components-color-text) 65%, transparent);
-  --components-color-border: #b8b5ad;
-  --components-color-muted: #e3e1da;
-  --components-font-family: "Karla Variable", "Karla", ui-sans-serif, system-ui, sans-serif;
-  --components-radius-surface: 2px;
-  --components-radius-input: 9999px;
-  --components-radius-button: 9999px;
-  --components-motion-duration: 200ms;
-  --components-motion-easing-standard: ease;
-  --components-motion-easing-out: ease-out;
+  --eb-color-primary: #252523;
+  --eb-color-primary-text: #faf9f6;
+  --eb-color-background: #faf9f6;
+  --eb-color-text: #252523;
+  --eb-color-text-muted: color-mix(in srgb, var(--eb-color-text) 65%, transparent);
+  --eb-color-border: #b8b5ad;
+  --eb-color-muted: #e3e1da;
+  --eb-font-family: "Karla Variable", "Karla", ui-sans-serif, system-ui, sans-serif;
+  --eb-radius-surface: 2px;
+  --eb-radius-input: 9999px;
+  --eb-radius-button: 9999px;
+  --eb-motion-duration: 200ms;
+  --eb-motion-easing-standard: ease;
+  --eb-motion-easing-out: ease-out;
   color-scheme: light;
 }
 
 :where([data-theme="light"]) {
   --color-red-700: #b91c1c;
-  --components-color-primary: #252523;
-  --components-color-primary-text: #faf9f6;
-  --components-color-background: #faf9f6;
-  --components-color-text: #252523;
-  --components-color-text-muted: color-mix(in srgb, var(--components-color-text) 65%, transparent);
-  --components-color-border: #b8b5ad;
-  --components-color-muted: #e3e1da;
+  --eb-color-primary: #252523;
+  --eb-color-primary-text: #faf9f6;
+  --eb-color-background: #faf9f6;
+  --eb-color-text: #252523;
+  --eb-color-text-muted: color-mix(in srgb, var(--eb-color-text) 65%, transparent);
+  --eb-color-border: #b8b5ad;
+  --eb-color-muted: #e3e1da;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :where(:root:not([data-theme])) {
     --color-red-700: #e86f66;
-    --components-color-primary: #f2efe8;
-    --components-color-primary-text: #252523;
-    --components-color-background: #30302d;
-    --components-color-text: #f3f0e9;
-    --components-color-text-muted: color-mix(
-      in srgb,
-      var(--components-color-text) 65%,
-      transparent
-    );
-    --components-color-border: #605e59;
-    --components-color-muted: #484743;
+    --eb-color-primary: #f2efe8;
+    --eb-color-primary-text: #252523;
+    --eb-color-background: #30302d;
+    --eb-color-text: #f3f0e9;
+    --eb-color-text-muted: color-mix(in srgb, var(--eb-color-text) 65%, transparent);
+    --eb-color-border: #605e59;
+    --eb-color-muted: #484743;
     color-scheme: dark;
   }
 }
 
 :where([data-theme="dark"]) {
   --color-red-700: #e86f66;
-  --components-color-primary: #f2efe8;
-  --components-color-primary-text: #252523;
-  --components-color-background: #30302d;
-  --components-color-text: #f3f0e9;
-  --components-color-text-muted: color-mix(in srgb, var(--components-color-text) 65%, transparent);
-  --components-color-border: #605e59;
-  --components-color-muted: #484743;
+  --eb-color-primary: #f2efe8;
+  --eb-color-primary-text: #252523;
+  --eb-color-background: #30302d;
+  --eb-color-text: #f3f0e9;
+  --eb-color-text-muted: color-mix(in srgb, var(--eb-color-text) 65%, transparent);
+  --eb-color-border: #605e59;
+  --eb-color-muted: #484743;
   color-scheme: dark;
 }

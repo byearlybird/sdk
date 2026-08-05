@@ -8,7 +8,7 @@
 
 ## Design tokens
 
-- Component CSS must reference the existing Pollen primitives and `--components-*`
+- Component CSS must reference the existing Pollen primitives and `--eb-*`
   theme tokens in `src/styles/tokens.css` for design decisions such as color,
   typography, spacing, sizing, and radius. Do not hardcode an equivalent value when
   a suitable token already exists.

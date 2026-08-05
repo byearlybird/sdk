@@ -9,11 +9,11 @@ function ExampleSwitch({ disabled = false }: { disabled?: boolean }) {
         display: "flex",
         alignItems: "center",
         gap: "var(--size-2)",
-        color: "var(--components-color-text)",
-        background: "var(--components-color-background)",
+        color: "var(--eb-color-text)",
+        background: "var(--eb-color-background)",
         padding: "var(--size-4)",
-        borderRadius: "var(--components-radius-surface)",
-        fontFamily: "var(--components-font-family)",
+        borderRadius: "var(--eb-radius-surface)",
+        fontFamily: "var(--eb-font-family)",
         fontSize: "var(--scale-00)",
       }}
     >

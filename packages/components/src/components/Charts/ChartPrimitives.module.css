@@ -6,11 +6,11 @@
   min-width: 0;
   margin: 0;
   padding: var(--size-4);
-  border: var(--size-px) solid var(--components-color-muted);
-  border-radius: var(--components-radius-surface);
-  color: var(--components-color-text);
-  background: var(--components-color-background);
-  font-family: var(--components-font-family);
+  border: var(--size-px) solid var(--eb-color-muted);
+  border-radius: var(--eb-radius-surface);
+  color: var(--eb-color-text);
+  background: var(--eb-color-background);
+  font-family: var(--eb-font-family);
 }
 
 .header {
@@ -27,7 +27,7 @@
 }
 
 .description {
-  color: var(--components-color-text);
+  color: var(--eb-color-text);
   font-size: var(--scale-00);
   line-height: var(--line-normal);
 }
@@ -40,19 +40,19 @@
 .tooltip {
   min-width: calc(var(--size-10) * 3);
   padding: var(--size-2);
-  border: var(--size-px) solid var(--components-color-muted);
-  border-radius: var(--components-radius-surface);
-  color: var(--components-color-text);
-  background: var(--components-color-background);
+  border: var(--size-px) solid var(--eb-color-muted);
+  border-radius: var(--eb-radius-surface);
+  color: var(--eb-color-text);
+  background: var(--eb-color-background);
   box-shadow: 0 var(--size-2) var(--size-4) color-mix(in srgb, var(--color-black) 12%, transparent);
-  font-family: var(--components-font-family);
+  font-family: var(--eb-font-family);
   font-size: var(--scale-00);
   line-height: var(--line-normal);
 }
 
 .tooltipLabel {
   padding-block-end: calc(var(--size-2) / 2);
-  border-block-end: var(--size-px) solid var(--components-color-muted);
+  border-block-end: var(--size-px) solid var(--eb-color-muted);
   font-weight: var(--weight-semibold);
 }
 
@@ -73,7 +73,7 @@
   display: flex;
   align-items: center;
   gap: var(--size-2);
-  color: var(--components-color-text);
+  color: var(--eb-color-text);
 }
 
 .tooltipRow dd {
@@ -99,8 +99,8 @@
   gap: var(--size-2) var(--size-4);
   margin: var(--size-4) 0 0;
   padding: var(--size-4) 0 0;
-  border-block-start: var(--size-px) solid var(--components-color-muted);
-  color: var(--components-color-text);
+  border-block-start: var(--size-px) solid var(--eb-color-muted);
+  color: var(--eb-color-text);
   font-size: var(--scale-00);
   line-height: var(--line-normal);
   list-style: none;
@@ -113,7 +113,7 @@
 }
 
 .legendItem strong {
-  color: var(--components-color-text);
+  color: var(--eb-color-text);
   font-variant-numeric: tabular-nums;
   font-weight: var(--weight-semibold);
 }

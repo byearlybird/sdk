@@ -2,12 +2,12 @@
   box-sizing: border-box;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  border: var(--size-px) solid var(--components-color-border);
-  border-radius: var(--components-radius-surface);
+  border: var(--size-px) solid var(--eb-color-border);
+  border-radius: var(--eb-radius-surface);
   overflow: hidden;
-  color: var(--components-color-text);
-  background: var(--components-color-background);
-  font-family: var(--components-font-family);
+  color: var(--eb-color-text);
+  background: var(--eb-color-background);
+  font-family: var(--eb-font-family);
   font-size: var(--scale-00);
   font-style: normal;
   font-weight: var(--weight-regular);
@@ -25,8 +25,8 @@
 
 .title {
   margin: 0;
-  color: var(--components-color-text);
-  font-family: var(--components-font-family);
+  color: var(--eb-color-text);
+  font-family: var(--eb-font-family);
   font-size: var(--scale-2);
   font-style: normal;
   font-weight: var(--weight-semibold);
@@ -51,7 +51,7 @@
   max-width: calc(var(--size-10) * 3);
   margin: var(--size-3) 0 var(--size-3) var(--size-3);
   aspect-ratio: 1;
-  border-radius: var(--components-radius-surface);
+  border-radius: var(--eb-radius-surface);
   object-fit: cover;
 }
 

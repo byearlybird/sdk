@@ -4,7 +4,7 @@
   inset: 0;
   background: color-mix(in srgb, var(--color-black) 50%, transparent);
   opacity: 1;
-  transition: opacity var(--components-motion-duration) var(--components-motion-easing-standard);
+  transition: opacity var(--eb-motion-duration) var(--eb-motion-easing-standard);
 }
 
 .backdrop[data-starting-style],
@@ -33,12 +33,12 @@
   max-height: calc(100dvh - (var(--size-4) * 2));
   overflow-y: auto;
   padding: var(--size-4);
-  border: var(--size-px) solid var(--components-color-border);
-  border-radius: var(--components-radius-surface);
+  border: var(--size-px) solid var(--eb-color-border);
+  border-radius: var(--eb-radius-surface);
   outline: 0;
-  color: var(--components-color-text);
-  background: var(--components-color-background);
-  font-family: var(--components-font-family);
+  color: var(--eb-color-text);
+  background: var(--eb-color-background);
+  font-family: var(--eb-font-family);
   font-size: var(--scale-00);
   font-style: normal;
   font-weight: var(--weight-regular);
@@ -46,8 +46,8 @@
   pointer-events: auto;
   transform-origin: center;
   transition:
-    opacity var(--components-motion-duration) var(--components-motion-easing-standard),
-    transform var(--components-motion-duration) var(--components-motion-easing-standard);
+    opacity var(--eb-motion-duration) var(--eb-motion-easing-standard),
+    transform var(--eb-motion-duration) var(--eb-motion-easing-standard);
 }
 
 .popup[data-starting-style],
@@ -58,8 +58,8 @@
 
 .title {
   margin: 0;
-  color: var(--components-color-text);
-  font-family: var(--components-font-family);
+  color: var(--eb-color-text);
+  font-family: var(--eb-font-family);
   font-size: var(--scale-2);
   font-style: normal;
   font-weight: var(--weight-semibold);
@@ -68,8 +68,8 @@
 
 .description {
   margin: var(--size-2) 0 0;
-  color: var(--components-color-text);
-  font-family: var(--components-font-family);
+  color: var(--eb-color-text);
+  font-family: var(--eb-font-family);
   font-size: var(--scale-00);
   font-style: normal;
   font-weight: var(--weight-regular);

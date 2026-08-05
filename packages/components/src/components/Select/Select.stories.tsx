@@ -25,8 +25,8 @@ function ExampleSelect({ disabled = false }: { disabled?: boolean }) {
       style={{
         width: 280,
         padding: 16,
-        background: "var(--components-color-background)",
-        borderRadius: "var(--components-radius-surface)",
+        background: "var(--eb-color-background)",
+        borderRadius: "var(--eb-radius-surface)",
       }}
     >
       <Select items={FRUITS} disabled={disabled}>

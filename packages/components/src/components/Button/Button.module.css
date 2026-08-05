@@ -8,9 +8,9 @@
   min-height: var(--size-10);
   padding-inline: var(--size-4);
   gap: var(--size-2);
-  border: var(--size-px) solid var(--components-color-primary);
-  border-radius: var(--components-radius-button);
-  font-family: var(--components-font-family);
+  border: var(--size-px) solid var(--eb-color-primary);
+  border-radius: var(--eb-radius-button);
+  font-family: var(--eb-font-family);
   font-size: var(--scale-00);
   font-style: normal;
   font-weight: var(--weight-semibold);
@@ -19,8 +19,8 @@
   white-space: nowrap;
   cursor: default;
   transition:
-    opacity var(--components-motion-duration) var(--components-motion-easing-standard),
-    transform var(--components-motion-duration) var(--components-motion-easing-standard);
+    opacity var(--eb-motion-duration) var(--eb-motion-easing-standard),
+    transform var(--eb-motion-duration) var(--eb-motion-easing-standard);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -33,7 +33,7 @@
 }
 
 .button:focus-visible {
-  outline: 3px solid var(--components-color-primary);
+  outline: 3px solid var(--eb-color-primary);
   outline-offset: 2px;
 }
 
@@ -43,14 +43,14 @@
 }
 
 .primary {
-  color: var(--components-color-primary-text);
-  background: var(--components-color-primary);
+  color: var(--eb-color-primary-text);
+  background: var(--eb-color-primary);
 }
 
 .secondary {
-  border-color: var(--components-color-border);
-  color: var(--components-color-text);
-  background: var(--components-color-background);
+  border-color: var(--eb-color-border);
+  color: var(--eb-color-text);
+  background: var(--eb-color-background);
 }
 
 .iconSize {

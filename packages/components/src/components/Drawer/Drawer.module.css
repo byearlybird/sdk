@@ -4,7 +4,7 @@
   inset: 0;
   background: color-mix(in srgb, var(--color-black) 50%, transparent);
   opacity: calc(1 - var(--drawer-swipe-progress, 0));
-  transition: opacity var(--components-motion-duration) var(--components-motion-easing-standard);
+  transition: opacity var(--eb-motion-duration) var(--eb-motion-easing-standard);
 }
 
 .backdrop[data-starting-style],
@@ -24,18 +24,18 @@
   position: absolute;
   box-sizing: border-box;
   overflow: hidden;
-  border: var(--size-px) solid var(--components-color-border);
-  border-radius: var(--components-radius-surface);
+  border: var(--size-px) solid var(--eb-color-border);
+  border-radius: var(--eb-radius-surface);
   outline: 0;
-  color: var(--components-color-text);
-  background: var(--components-color-background);
-  font-family: var(--components-font-family);
+  color: var(--eb-color-text);
+  background: var(--eb-color-background);
+  font-family: var(--eb-font-family);
   font-size: var(--scale-00);
   font-style: normal;
   font-weight: var(--weight-regular);
   line-height: var(--line-normal);
   pointer-events: auto;
-  transition: transform var(--components-motion-duration) var(--components-motion-easing-standard);
+  transition: transform var(--eb-motion-duration) var(--eb-motion-easing-standard);
 }
 
 .popup[data-swipe-direction="down"] {
@@ -116,8 +116,8 @@
   left: 50%;
   width: calc(var(--size-10) + var(--size-2));
   height: var(--size-1);
-  border-radius: var(--components-radius-input);
-  background: var(--components-color-muted);
+  border-radius: var(--eb-radius-input);
+  background: var(--eb-color-muted);
   content: "";
   transform: translateX(-50%);
 }
@@ -136,8 +136,8 @@
 
 .title {
   margin: 0;
-  color: var(--components-color-text);
-  font-family: var(--components-font-family);
+  color: var(--eb-color-text);
+  font-family: var(--eb-font-family);
   font-size: var(--scale-2);
   font-style: normal;
   font-weight: var(--weight-semibold);
@@ -146,8 +146,8 @@
 
 .description {
   margin: var(--size-2) 0 0;
-  color: var(--components-color-text);
-  font-family: var(--components-font-family);
+  color: var(--eb-color-text);
+  font-family: var(--eb-font-family);
   font-size: var(--scale-00);
   font-style: normal;
   font-weight: var(--weight-regular);

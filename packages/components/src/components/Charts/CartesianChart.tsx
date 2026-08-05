@@ -10,13 +10,13 @@ import type {
 export const CARTESIAN_MARGIN = { bottom: 0, left: 0, right: 8, top: 8 };
 export const CARTESIAN_MARGIN_WITHOUT_Y_AXIS = { bottom: 0, left: 8, right: 8, top: 8 };
 
-const AXIS_TICK = { fill: "var(--components-color-text)", fontSize: 12 };
+const AXIS_TICK = { fill: "var(--eb-color-text)", fontSize: 12 };
 const LINE_TOOLTIP_CURSOR = {
-  stroke: "var(--components-color-border)",
+  stroke: "var(--eb-color-border)",
   strokeDasharray: "3 3",
   strokeWidth: 1,
 };
-const BAR_TOOLTIP_CURSOR = { fill: "var(--components-color-muted)", opacity: 0.45 };
+const BAR_TOOLTIP_CURSOR = { fill: "var(--eb-color-muted)", opacity: 0.45 };
 const AXIS_NUMBER_FORMATTER = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 1,
   notation: "compact",
@@ -76,7 +76,7 @@ export function CartesianChartElements<TDatum extends object>({
 }) {
   return (
     <>
-      <CartesianGrid stroke="var(--components-color-muted)" vertical={false} />
+      <CartesianGrid stroke="var(--eb-color-muted)" vertical={false} />
       <XAxis<TDatum, number | string>
         axisLine={false}
         dataKey={xKey}

@@ -6,27 +6,27 @@
   width: var(--size-10);
   height: calc(var(--size-4) + var(--size-2));
   padding: calc(var(--size-2) / 2);
-  border: var(--size-px) solid var(--components-color-border);
-  border-radius: var(--components-radius-button);
-  background: var(--components-color-muted);
+  border: var(--size-px) solid var(--eb-color-border);
+  border-radius: var(--eb-radius-button);
+  background: var(--eb-color-muted);
   cursor: default;
   transition:
-    border-color var(--components-motion-duration) var(--components-motion-easing-standard),
-    background-color var(--components-motion-duration) var(--components-motion-easing-standard);
+    border-color var(--eb-motion-duration) var(--eb-motion-easing-standard),
+    background-color var(--eb-motion-duration) var(--eb-motion-easing-standard);
   -webkit-tap-highlight-color: transparent;
 }
 
 .root[data-checked] {
-  border-color: var(--components-color-primary);
-  background: var(--components-color-primary);
+  border-color: var(--eb-color-primary);
+  background: var(--eb-color-primary);
 }
 
 .root:hover:not([data-disabled]) {
-  border-color: var(--components-color-text);
+  border-color: var(--eb-color-text);
 }
 
 .root:focus-visible {
-  outline: calc(var(--size-px) * 2) solid var(--components-color-primary);
+  outline: calc(var(--size-px) * 2) solid var(--eb-color-primary);
   outline-offset: calc(var(--size-px) * 2);
 }
 
@@ -39,10 +39,10 @@
   display: block;
   width: var(--size-4);
   height: var(--size-4);
-  border-radius: var(--components-radius-button);
-  background: var(--components-color-background);
+  border-radius: var(--eb-radius-button);
+  background: var(--eb-color-background);
   translate: 0;
-  transition: translate var(--components-motion-duration) var(--components-motion-easing-standard);
+  transition: translate var(--eb-motion-duration) var(--eb-motion-easing-standard);
 }
 
 .thumb[data-checked] {

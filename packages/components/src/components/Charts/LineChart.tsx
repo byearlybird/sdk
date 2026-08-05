@@ -61,7 +61,7 @@ export function LineChart<TDatum extends object>({
             return (
               <Line<TDatum, number>
                 activeDot={{
-                  fill: "var(--components-color-background)",
+                  fill: "var(--eb-color-background)",
                   r: 5,
                   stroke: color,
                   strokeWidth: 2,

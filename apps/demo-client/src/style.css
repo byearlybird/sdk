@@ -2,9 +2,9 @@
 @import "@byearlybird/components/style.css";
 
 :root {
-  color: var(--components-color-text);
-  background: var(--components-color-background);
-  font-family: var(--components-font-family);
+  color: var(--eb-color-text);
+  background: var(--eb-color-background);
+  font-family: var(--eb-font-family);
 }
 
 * {
@@ -51,7 +51,7 @@ h1 {
   align-items: center;
   gap: var(--size-2);
   padding-block: var(--size-2);
-  border-bottom: var(--size-px) solid var(--components-color-border);
+  border-bottom: var(--size-px) solid var(--eb-color-border);
 }
 
 .todo-label {
@@ -62,7 +62,7 @@ h1 {
 }
 
 .todo-label .completed {
-  color: var(--components-color-text-muted);
+  color: var(--eb-color-text-muted);
   text-decoration: line-through;
 }
 

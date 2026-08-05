@@ -1,13 +1,29 @@
 import { CapacitorSQLite, SQLiteConnection } from "@capacitor-community/sqlite";
 import type { SQLiteDBConnection } from "@capacitor-community/sqlite";
 import { readChangeCount } from "./storage.ts";
-import type { SqliteBinding, SqliteRow, StorageAdapter, StorageConnection } from "./storage.ts";
+import type {
+  SqliteBinding,
+  SqliteRow,
+  StorageAdapter,
+  StorageCommand,
+  StorageCommandResult,
+  StorageConnection,
+} from "./storage.ts";
 
 type CapacitorResult = {
   result?: boolean;
 };
 
-type CapacitorDatabaseConnection = Pick<SQLiteDBConnection, "isDBOpen" | "open" | "query" | "run">;
+type CapacitorDatabaseConnection = Pick<
+  SQLiteDBConnection,
+  | "beginTransaction"
+  | "commitTransaction"
+  | "isDBOpen"
+  | "open"
+  | "query"
+  | "rollbackTransaction"
+  | "run"
+>;
 
 type CapacitorConnectionManager = {
   checkConnectionsConsistency(): Promise<CapacitorResult>;
@@ -92,6 +108,30 @@ async function openCapacitorDatabase(
   }
 
   return {
+    executeTransaction: (commands) =>
+      enqueue(async () => {
+        if (commands.length === 0) return [];
+
+        await database.beginTransaction();
+        try {
+          const results: StorageCommandResult[] = [];
+          for (const command of commands) {
+            results.push(await executeCommand(database, command));
+          }
+          await database.commitTransaction();
+          return results;
+        } catch (error) {
+          try {
+            await database.rollbackTransaction();
+          } catch (rollbackError) {
+            throw new AggregateError(
+              [error, rollbackError],
+              "The SQLite transaction failed and could not be rolled back.",
+            );
+          }
+          throw error;
+        }
+      }),
     query: (sql, bindings = []) =>
       enqueue(async () => {
         const result = await database.query(sql, toCapacitorBindings(bindings));
@@ -111,6 +151,23 @@ async function openCapacitorDatabase(
       })();
       return closePromise;
     },
+  };
+}
+
+async function executeCommand(
+  database: CapacitorDatabaseConnection,
+  command: StorageCommand,
+): Promise<StorageCommandResult> {
+  const bindings = toCapacitorBindings(command.bindings ?? []);
+  if (command.kind === "query") {
+    const result = await database.query(command.sql, bindings);
+    return { kind: "query", rows: readRows(result.values) };
+  }
+
+  const result = await database.run(command.sql, bindings, false);
+  return {
+    changes: readChangeCount(result.changes?.changes),
+    kind: "run",
   };
 }
 

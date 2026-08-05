@@ -5,8 +5,31 @@ export type StorageRunResult = Readonly<{
   changes: number;
 }>;
 
+export type StorageCommand =
+  | Readonly<{
+      bindings?: readonly SqliteBinding[];
+      kind: "query";
+      sql: string;
+    }>
+  | Readonly<{
+      bindings?: readonly SqliteBinding[];
+      kind: "run";
+      sql: string;
+    }>;
+
+export type StorageCommandResult =
+  | Readonly<{
+      kind: "query";
+      rows: SqliteRow[];
+    }>
+  | Readonly<{
+      changes: number;
+      kind: "run";
+    }>;
+
 export type StorageConnection = {
   close(): Promise<void>;
+  executeTransaction(commands: readonly StorageCommand[]): Promise<readonly StorageCommandResult[]>;
   query(sql: string, bindings?: readonly SqliteBinding[]): Promise<SqliteRow[]>;
   run(sql: string, bindings?: readonly SqliteBinding[]): Promise<StorageRunResult>;
 };

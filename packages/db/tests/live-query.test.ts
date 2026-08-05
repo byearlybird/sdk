@@ -243,6 +243,7 @@ function createDatabaseFixture(): {
   return {
     database: {
       ready: Promise.resolve(),
+      batch: async () => undefined,
       close: async () => undefined,
       delete: async () => false,
       get,

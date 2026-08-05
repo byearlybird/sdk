@@ -20,6 +20,8 @@ export type {
   SqliteBinding,
   SqliteRow,
   StorageAdapter,
+  StorageCommand,
+  StorageCommandResult,
   StorageConnection,
   StorageRunResult,
 } from "./storage.ts";

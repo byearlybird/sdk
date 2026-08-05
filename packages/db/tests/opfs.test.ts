@@ -20,7 +20,13 @@ class MockWorker extends EventTarget {
         ? [{ message: "hello" }]
         : request.operation === "run"
           ? { changes: 1 }
-          : undefined;
+          : request.operation === "executeTransaction"
+            ? request.commands.map((command) =>
+                command.kind === "query"
+                  ? { kind: "query", rows: [{ entity_id: "habit-1" }] }
+                  : { changes: 1, kind: "run" },
+              )
+            : undefined;
 
     queueMicrotask(() => {
       this.dispatchEvent(
@@ -91,5 +97,33 @@ describe("openSqliteOpfs", () => {
     await expect(database.run("DELETE FROM habits")).rejects.toThrow("Worker crashed.");
     await expect(database.close()).rejects.toThrow("Worker crashed.");
     expect(worker?.terminated).toBe(true);
+  });
+
+  it("sends a complete transaction to the worker", async () => {
+    vi.stubGlobal("Worker", MockWorker);
+    const database = await openSqliteOpfs("habits");
+
+    await expect(
+      database.executeTransaction([
+        { bindings: ["habit-1"], kind: "run", sql: "DELETE FROM entities WHERE entity_id = ?" },
+        { kind: "query", sql: "SELECT entity_id FROM entities" },
+      ]),
+    ).resolves.toEqual([
+      { changes: 1, kind: "run" },
+      { kind: "query", rows: [{ entity_id: "habit-1" }] },
+    ]);
+
+    const [worker] = MockWorker.instances;
+    expect(worker?.requests[1]).toMatchObject({
+      commands: [
+        {
+          bindings: ["habit-1"],
+          kind: "run",
+          sql: "DELETE FROM entities WHERE entity_id = ?",
+        },
+        { kind: "query", sql: "SELECT entity_id FROM entities" },
+      ],
+      operation: "executeTransaction",
+    });
   });
 });

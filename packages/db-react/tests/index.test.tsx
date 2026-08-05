@@ -79,6 +79,7 @@ describe("createDatabaseReact", () => {
 function createDatabaseFixture(): Database<TestSchema> {
   return {
     ready: Promise.resolve(),
+    batch: async () => undefined,
     close: async () => undefined,
     delete: async () => false,
     get: async () => null,

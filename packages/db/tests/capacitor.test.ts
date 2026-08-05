@@ -5,9 +5,12 @@ type ConnectionManager = NonNullable<Parameters<typeof createCapacitorStorageAda
 type DatabaseConnection = Awaited<ReturnType<ConnectionManager["createConnection"]>>;
 
 type MockDatabase = {
+  beginTransaction: ReturnType<typeof vi.fn<DatabaseConnection["beginTransaction"]>>;
+  commitTransaction: ReturnType<typeof vi.fn<DatabaseConnection["commitTransaction"]>>;
   isDBOpen: ReturnType<typeof vi.fn<DatabaseConnection["isDBOpen"]>>;
   open: ReturnType<typeof vi.fn<DatabaseConnection["open"]>>;
   query: ReturnType<typeof vi.fn<DatabaseConnection["query"]>>;
+  rollbackTransaction: ReturnType<typeof vi.fn<DatabaseConnection["rollbackTransaction"]>>;
   run: ReturnType<typeof vi.fn<DatabaseConnection["run"]>>;
 };
 
@@ -23,9 +26,18 @@ let retrieveConnection: ReturnType<typeof vi.fn<ConnectionManager["retrieveConne
 
 beforeEach(() => {
   database = {
+    beginTransaction: vi
+      .fn<DatabaseConnection["beginTransaction"]>()
+      .mockResolvedValue({ changes: { changes: 0 } }),
+    commitTransaction: vi
+      .fn<DatabaseConnection["commitTransaction"]>()
+      .mockResolvedValue({ changes: { changes: 0 } }),
     isDBOpen: vi.fn<DatabaseConnection["isDBOpen"]>().mockResolvedValue({ result: false }),
     open: vi.fn<DatabaseConnection["open"]>().mockResolvedValue(undefined),
     query: vi.fn<DatabaseConnection["query"]>().mockResolvedValue({ values: [] }),
+    rollbackTransaction: vi
+      .fn<DatabaseConnection["rollbackTransaction"]>()
+      .mockResolvedValue({ changes: { changes: 0 } }),
     run: vi.fn<DatabaseConnection["run"]>().mockResolvedValue({ changes: { changes: 0 } }),
   };
   checkConnectionsConsistency = vi
@@ -99,6 +111,75 @@ describe("createCapacitorStorageAdapter", () => {
     expect(database.run).toHaveBeenCalledWith("DELETE FROM entities WHERE collection = ?", [
       "counters",
     ]);
+  });
+
+  it("executes commands in a transaction and returns their individual results", async () => {
+    database.run.mockResolvedValueOnce({ changes: { changes: 1 } });
+    database.query.mockResolvedValueOnce({ values: [{ entity_id: "habit-1" }] });
+    const connection = await createCapacitorStorageAdapter(connectionManager).open("daybook");
+
+    await expect(
+      connection.executeTransaction([
+        { bindings: ["habit-1"], kind: "run", sql: "DELETE FROM entities WHERE entity_id = ?" },
+        {
+          bindings: ["habit-1"],
+          kind: "query",
+          sql: "SELECT entity_id FROM entities WHERE entity_id = ?",
+        },
+      ]),
+    ).resolves.toEqual([
+      { changes: 1, kind: "run" },
+      { kind: "query", rows: [{ entity_id: "habit-1" }] },
+    ]);
+
+    expect(database.beginTransaction).toHaveBeenCalledOnce();
+    expect(database.run).toHaveBeenCalledWith(
+      "DELETE FROM entities WHERE entity_id = ?",
+      ["habit-1"],
+      false,
+    );
+    expect(database.query).toHaveBeenCalledWith(
+      "SELECT entity_id FROM entities WHERE entity_id = ?",
+      ["habit-1"],
+    );
+    expect(database.commitTransaction).toHaveBeenCalledOnce();
+    expect(database.rollbackTransaction).not.toHaveBeenCalled();
+  });
+
+  it("rolls back failed transactions", async () => {
+    database.run.mockRejectedValueOnce(new Error("Write failed."));
+    const connection = await createCapacitorStorageAdapter(connectionManager).open("daybook");
+
+    await expect(
+      connection.executeTransaction([{ kind: "run", sql: "DELETE FROM entities" }]),
+    ).rejects.toThrow("Write failed.");
+
+    expect(database.beginTransaction).toHaveBeenCalledOnce();
+    expect(database.commitTransaction).not.toHaveBeenCalled();
+    expect(database.rollbackTransaction).toHaveBeenCalledOnce();
+  });
+
+  it("does not interleave queued operations with a transaction", async () => {
+    let finishRun!: (result: { changes: { changes: number } }) => void;
+    database.run.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishRun = resolve;
+        }),
+    );
+    const connection = await createCapacitorStorageAdapter(connectionManager).open("daybook");
+
+    const transaction = connection.executeTransaction([
+      { kind: "run", sql: "DELETE FROM entities" },
+    ]);
+    const query = connection.query("SELECT entity_id FROM entities");
+    await vi.waitFor(() => expect(database.run).toHaveBeenCalledOnce());
+    expect(database.query).not.toHaveBeenCalled();
+
+    finishRun({ changes: { changes: 1 } });
+    await expect(transaction).resolves.toEqual([{ changes: 1, kind: "run" }]);
+    await expect(query).resolves.toEqual([]);
+    expect(database.commitTransaction).toHaveBeenCalledBefore(database.query);
   });
 
   it("closes the managed connection once and rejects later operations", async () => {

@@ -2,7 +2,12 @@ import sqlite3InitModule from "@sqlite.org/sqlite-wasm";
 import type { Database, SAHPoolUtil } from "@sqlite.org/sqlite-wasm";
 import type { SqliteWorkerRequest, SqliteWorkerResponse } from "./opfs.ts";
 import { readChangeCount } from "./storage.ts";
-import type { SqliteBinding, StorageRunResult } from "./storage.ts";
+import type {
+  SqliteBinding,
+  StorageCommand,
+  StorageCommandResult,
+  StorageRunResult,
+} from "./storage.ts";
 
 const poolDirectory = ".byearlybird-db-opfs";
 const poolName = "byearlybird-db-opfs";
@@ -49,6 +54,8 @@ async function dispatch(request: SqliteWorkerRequest): Promise<unknown> {
   switch (request.operation) {
     case "open":
       return open(request.databaseName);
+    case "executeTransaction":
+      return executeTransaction(request.commands);
     case "query":
       return getDatabase().exec({
         bind: request.bindings,
@@ -60,6 +67,39 @@ async function dispatch(request: SqliteWorkerRequest): Promise<unknown> {
       return run(request.sql, request.bindings);
     case "close":
       return close();
+  }
+}
+
+function executeTransaction(commands: readonly StorageCommand[]): readonly StorageCommandResult[] {
+  if (commands.length === 0) return [];
+
+  const openDatabase = getDatabase();
+  openDatabase.exec("BEGIN");
+  try {
+    const results = commands.map((command): StorageCommandResult => {
+      if (command.kind === "query") {
+        const rows = openDatabase.exec({
+          bind: command.bindings ?? [],
+          returnValue: "resultRows",
+          rowMode: "object",
+          sql: command.sql,
+        });
+        return { kind: "query", rows };
+      }
+      return { kind: "run", ...run(command.sql, command.bindings ?? []) };
+    });
+    openDatabase.exec("COMMIT");
+    return results;
+  } catch (error) {
+    try {
+      openDatabase.exec("ROLLBACK");
+    } catch (rollbackError) {
+      throw new AggregateError(
+        [error, rollbackError],
+        "The SQLite transaction failed and could not be rolled back.",
+      );
+    }
+    throw error;
   }
 }
 

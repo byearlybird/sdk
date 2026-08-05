@@ -87,12 +87,14 @@ let open: ReturnType<typeof vi.fn<StorageAdapter["open"]>>;
 let query: ReturnType<typeof vi.fn<StorageConnection["query"]>>;
 let run: ReturnType<typeof vi.fn<StorageConnection["run"]>>;
 let close: ReturnType<typeof vi.fn<StorageConnection["close"]>>;
+let executeTransaction: ReturnType<typeof vi.fn<StorageConnection["executeTransaction"]>>;
 
 beforeEach(() => {
   query = vi.fn<StorageConnection["query"]>().mockResolvedValue([]);
   run = vi.fn<StorageConnection["run"]>().mockResolvedValue({ changes: 0 });
   close = vi.fn<StorageConnection["close"]>().mockResolvedValue();
-  sqlite = { close, query, run };
+  executeTransaction = vi.fn<StorageConnection["executeTransaction"]>().mockResolvedValue([]);
+  sqlite = { close, executeTransaction, query, run };
   open = vi.fn<StorageAdapter["open"]>().mockResolvedValue(sqlite);
   storage = { open };
 });

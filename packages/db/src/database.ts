@@ -1,15 +1,28 @@
+import { compileMutation, readMutationOutcome } from "./mutation.ts";
+import type { CompiledMutation, MutationIntent } from "./mutation.ts";
 import { compileQuery, getQueryBuilder } from "./query.ts";
 import type { QueryBuilder, QueryDefinition } from "./query.ts";
-import type { SqliteBinding, SqliteRow, StorageAdapter, StorageConnection } from "./storage.ts";
+import type {
+  SqliteRow,
+  StorageAdapter,
+  StorageCommand,
+  StorageCommandResult,
+  StorageConnection,
+} from "./storage.ts";
 
-export type {
-  QueryBuilder,
-  QueryDefinition,
-  QueryOrder,
-  QueryPredicate,
-  QueryScalar,
-} from "./query.ts";
-export type { StorageAdapter, StorageConnection, StorageRunResult } from "./storage.ts";
+type BatchMutator<Schema> = Readonly<{
+  delete<Collection extends CollectionName<Schema>>(collection: Collection, id: string): void;
+  insert<Collection extends CollectionName<Schema>>(
+    collection: Collection,
+    id: string,
+    data: Schema[Collection],
+  ): void;
+  patch<Collection extends CollectionName<Schema>>(
+    collection: Collection,
+    id: string,
+    changes: DatabasePatch<Schema[Collection]>,
+  ): void;
+}>;
 
 export type CollectionName<Schema> = Extract<keyof Schema, string>;
 
@@ -34,6 +47,7 @@ export type DatabaseChange<Schema> = {
 
 export type Database<Schema> = {
   readonly ready: Promise<void>;
+  batch(build: (mutation: BatchMutator<Schema>) => void): Promise<void>;
   close(): Promise<void>;
   delete<Collection extends CollectionName<Schema>>(
     collection: Collection,
@@ -119,8 +133,49 @@ export function createDatabase<Schema>(options: DatabaseOptions): Database<Schem
     }
   }
 
+  async function executeMutations(
+    intents: readonly MutationIntent[],
+  ): Promise<readonly (boolean | undefined)[]> {
+    const mutations = intents.map(compileMutation);
+    const database = await getOpenSqlite();
+    const results = await executeCompiledMutations(database, mutations);
+
+    if (results.length !== mutations.length) {
+      throw new TypeError("Storage returned an invalid number of transaction results.");
+    }
+
+    const outcomes = mutations.map((mutation, index) =>
+      readMutationOutcome(mutation, results[index]),
+    );
+    for (const outcome of outcomes) {
+      if (outcome.change !== undefined) {
+        notifyChange(outcome.change as DatabaseChange<Schema>);
+      }
+    }
+    return outcomes.map(({ value }) => value);
+  }
+
   return {
     ready,
+    batch: async (build) => {
+      const intents: MutationIntent[] = [];
+      let collecting = true;
+      const mutator = createBatchMutator<Schema>(intents, () => collecting);
+      let result: unknown;
+      try {
+        result = build(mutator);
+      } finally {
+        collecting = false;
+      }
+      if (isPromiseLike(result)) {
+        void Promise.resolve(result).catch(() => undefined);
+        throw new TypeError("A database batch callback must be synchronous.");
+      }
+      if (result !== undefined) {
+        throw new TypeError("A database batch callback must not return a value.");
+      }
+      await executeMutations(intents);
+    },
     getAll: (collection) => readEntries(collection, {}),
     get: async (collection, id) => {
       const database = await getOpenSqlite();
@@ -138,15 +193,7 @@ export function createDatabase<Schema>(options: DatabaseOptions): Database<Schem
       return readEntries(collection, build(getQueryBuilder<Schema[typeof collection]>()));
     },
     insert: async (collection, id, data) => {
-      const database = await getOpenSqlite();
-      await database.run(
-        `
-          INSERT INTO entities (collection, entity_id, entity)
-          VALUES (?, ?, ?)
-        `,
-        [collection, id, encodeEntity(data)],
-      );
-      notifyChange({ collection, id, operation: "insert" });
+      await executeMutations([{ collection, data, id, operation: "insert" }]);
     },
     onChange: (listener) => {
       changeListeners.add(listener);
@@ -155,45 +202,12 @@ export function createDatabase<Schema>(options: DatabaseOptions): Database<Schem
       };
     },
     patch: async (collection, id, changes) => {
-      const database = await getOpenSqlite();
-      const entries = Object.entries(changes);
-      if (entries.length === 0) {
-        const rows = await database.query(
-          `
-            SELECT entity_id
-            FROM entities
-            WHERE collection = ? AND entity_id = ?
-          `,
-          [collection, id],
-        );
-        return rows.length > 0;
-      }
-
-      const patch = createJsonSetPatch(entries);
-      const result = await database.run(
-        `
-          UPDATE entities
-          SET entity = ${patch.expression}
-          WHERE collection = ? AND entity_id = ?
-        `,
-        [...patch.bindings, collection, id],
-      );
-      const changed = result.changes > 0;
-      if (changed) notifyChange({ collection, id, operation: "update" });
-      return changed;
+      const [changed] = await executeMutations([{ changes, collection, id, operation: "patch" }]);
+      return changed as boolean;
     },
     delete: async (collection, id) => {
-      const database = await getOpenSqlite();
-      const result = await database.run(
-        `
-          DELETE FROM entities
-          WHERE collection = ? AND entity_id = ?
-        `,
-        [collection, id],
-      );
-      const changed = result.changes > 0;
-      if (changed) notifyChange({ collection, id, operation: "delete" });
-      return changed;
+      const [changed] = await executeMutations([{ collection, id, operation: "delete" }]);
+      return changed as boolean;
     },
     close: () => {
       closePromise ??= (async () => {
@@ -205,6 +219,61 @@ export function createDatabase<Schema>(options: DatabaseOptions): Database<Schem
       return closePromise;
     },
   };
+}
+
+function createBatchMutator<Schema>(
+  intents: MutationIntent[],
+  isCollecting: () => boolean,
+): BatchMutator<Schema> {
+  function add(intent: MutationIntent): void {
+    if (!isCollecting()) {
+      throw new Error("Database batch mutations can only be added inside the batch callback.");
+    }
+    intents.push(intent);
+  }
+
+  const deleteMutation: BatchMutator<Schema>["delete"] = (collection, id) => {
+    add({ collection, id, operation: "delete" });
+  };
+  const insert: BatchMutator<Schema>["insert"] = (collection, id, data) => {
+    add({ collection, data, id, operation: "insert" });
+  };
+  const patch: BatchMutator<Schema>["patch"] = (collection, id, changes) => {
+    add({ changes, collection, id, operation: "patch" });
+  };
+  return Object.freeze({ delete: deleteMutation, insert, patch });
+}
+
+function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
+  return (
+    (typeof value === "object" || typeof value === "function") &&
+    value !== null &&
+    "then" in value &&
+    typeof value.then === "function"
+  );
+}
+
+async function executeCommand(
+  database: StorageConnection,
+  command: StorageCommand,
+): Promise<StorageCommandResult> {
+  if (command.kind === "query") {
+    const rows = await database.query(command.sql, command.bindings);
+    return { kind: "query", rows };
+  }
+  const result = await database.run(command.sql, command.bindings);
+  return { changes: result.changes, kind: "run" };
+}
+
+async function executeCompiledMutations(
+  database: StorageConnection,
+  mutations: readonly CompiledMutation[],
+): Promise<readonly StorageCommandResult[]> {
+  if (mutations.length === 0) return [];
+  if (mutations.length === 1) {
+    return [await executeCommand(database, mutations[0].command)];
+  }
+  return database.executeTransaction(mutations.map(({ command }) => command));
 }
 
 async function openAndInitialize(
@@ -219,47 +288,6 @@ async function openAndInitialize(
     await database.close().catch(() => undefined);
     throw error;
   }
-}
-
-function encodeEntity(entity: unknown): string {
-  try {
-    if (!isJsonCompatible(entity)) throw new Error();
-    const encoded = JSON.stringify(entity);
-    if (encoded === undefined) throw new Error();
-    return encoded;
-  } catch (cause) {
-    throw new TypeError("Database entities must be JSON-serializable.", { cause });
-  }
-}
-
-function createJsonSetPatch(entries: readonly (readonly [string, unknown])[]): Readonly<{
-  bindings: readonly SqliteBinding[];
-  expression: string;
-}> {
-  return {
-    bindings: entries.flatMap(([key, value]) => [key, encodeEntity(value)]),
-    expression: `json_set(
-      entity,
-      ${entries.map(() => "'$.' || json_quote(?), json(?)").join(",\n")}
-    )`,
-  };
-}
-
-function isJsonCompatible(value: unknown, ancestors = new Set<object>()): boolean {
-  if (value === null || typeof value === "boolean" || typeof value === "string") return true;
-  if (typeof value === "number") return Number.isFinite(value);
-  if (typeof value !== "object") return false;
-
-  const isArray = Array.isArray(value);
-  const prototype = Object.getPrototypeOf(value);
-  if (!isArray && prototype !== Object.prototype && prototype !== null) return false;
-  if (ancestors.has(value)) return false;
-
-  ancestors.add(value);
-  const children = isArray ? Array.from(value) : Object.values(value);
-  const compatible = children.every((child) => isJsonCompatible(child, ancestors));
-  ancestors.delete(value);
-  return compatible;
 }
 
 function decodeEntity<Entity>(row: SqliteRow): Entity {

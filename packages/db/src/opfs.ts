@@ -2,12 +2,15 @@ import type {
   SqliteBinding,
   SqliteRow,
   StorageAdapter,
+  StorageCommand,
+  StorageCommandResult,
   StorageConnection,
   StorageRunResult,
 } from "./storage.ts";
 
 type WorkerCommand =
   | { databaseName: string; operation: "open" }
+  | { commands: readonly StorageCommand[]; operation: "executeTransaction" }
   | { bindings: readonly SqliteBinding[]; operation: "query"; sql: string }
   | { bindings: readonly SqliteBinding[]; operation: "run"; sql: string }
   | { operation: "close" };
@@ -108,6 +111,13 @@ export async function openSqliteOpfs(databaseName: string): Promise<StorageConne
   }
 
   return {
+    executeTransaction: (commands) => {
+      if (closed) return Promise.reject(new Error("The SQLite database is closed."));
+      return request<readonly StorageCommandResult[]>({
+        commands,
+        operation: "executeTransaction",
+      });
+    },
     query: (sql, bindings = []) => {
       if (closed) return Promise.reject(new Error("The SQLite database is closed."));
       return request<SqliteRow[]>({ bindings, operation: "query", sql });

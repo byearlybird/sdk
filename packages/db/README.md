@@ -23,6 +23,23 @@ const database = createDatabase<AppSchema>({
 });
 ```
 
+Apply multiple mutations atomically with `batch`. The callback records mutations in
+invocation order and must be synchronous:
+
+```ts
+await database.batch((mutation) => {
+  mutation.insert("entries", "entry-1", {
+    content: "First entry",
+    createdAt: new Date().toISOString(),
+  });
+  mutation.patch("entries", "entry-2", { content: "Updated entry" });
+  mutation.delete("entries", "entry-3");
+});
+```
+
+If any mutation fails, the entire batch is rolled back. Change listeners are notified
+only after the transaction commits.
+
 Install `@capacitor-community/sqlite` and `@capacitor/core` when using the Capacitor
 adapter. Install `@sqlite.org/sqlite-wasm` when using the OPFS adapter exported from
 `@byearlybird/db/opfs`.

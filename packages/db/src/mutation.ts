@@ -56,12 +56,12 @@ export function prepareMutation(intent: MutationIntent): PreparedMutation {
   if (intent.id.length === 0) throw new TypeError("An entity ID cannot be empty.");
   switch (intent.operation) {
     case "insert":
-      return Object.freeze({
+      return {
         collection: intent.collection,
         encodedData: encodeEntity(intent.data),
         id: intent.id,
         operation: intent.operation,
-      });
+      };
     case "patch": {
       if (
         intent.changes === null ||
@@ -70,19 +70,17 @@ export function prepareMutation(intent: MutationIntent): PreparedMutation {
       ) {
         throw new TypeError("Database patches must be objects.");
       }
-      return Object.freeze({
+      return {
         collection: intent.collection,
-        entries: Object.freeze(
-          Object.entries(intent.changes).map(([key, value]) =>
-            Object.freeze([key, encodeEntity(value)] as const),
-          ),
+        entries: Object.entries(intent.changes).map(
+          ([key, value]) => [key, encodeEntity(value)] as const,
         ),
         id: intent.id,
         operation: intent.operation,
-      });
+      };
     }
     case "delete":
-      return Object.freeze({ ...intent });
+      return intent;
   }
 }
 

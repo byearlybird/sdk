@@ -147,18 +147,12 @@ export async function readStoredRecord(
   );
   if (row === undefined) return null;
   const deleted = readBooleanInteger(row, "deleted");
-  const entity = row.entity;
-  if ((!deleted && typeof entity !== "string") || (deleted && entity !== null)) {
-    throw new TypeError("SQLite returned an invalid entity state.");
-  }
-  const changeId = row.change_id;
-  if (changeId !== null && changeId !== undefined && typeof changeId !== "string") {
-    throw new TypeError('SQLite returned an invalid "change_id" value.');
-  }
+  // The entities CHECK constraint guarantees entity is a string exactly when not deleted.
+  const changeId = readOptionalString(row, "change_id");
   return {
     deleted,
-    encodedEntity: entity as null | string,
-    ...(typeof changeId === "string" ? { outboxChangeId: changeId } : {}),
+    encodedEntity: deleted ? null : readString(row, "entity"),
+    ...(changeId === null ? {} : { outboxChangeId: changeId }),
     version: readVersion(row),
   };
 }
@@ -273,6 +267,13 @@ export function readString(row: SqliteRow, column: string): string {
     throw new TypeError(`SQLite returned an invalid "${column}" value.`);
   }
   return value;
+}
+
+/** Reads a column that a LEFT JOIN may leave absent. */
+function readOptionalString(row: SqliteRow, column: string): string | null {
+  const value = row[column];
+  if (value === null || value === undefined) return null;
+  return readString(row, column);
 }
 
 export function recordKey(collection: string, id: string): string {

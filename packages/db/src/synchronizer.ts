@@ -40,7 +40,7 @@ export function createSynchronizer<Schema>(
   database: Database<Schema>,
   options: SynchronizerOptions,
 ): Synchronizer {
-  const transport = normalizeTransport(options.transport);
+  const { transport } = options;
   const pullLimit = normalizeBatchLimit(options.pullLimit ?? defaultBatchLimit, "pull");
   const pushLimit = normalizeBatchLimit(options.pushLimit ?? defaultBatchLimit, "push");
   let activeSync: Promise<void> | undefined;
@@ -101,18 +101,7 @@ async function pushLocalChanges<Schema>(
   }
 }
 
-function normalizeTransport(transport: SyncTransport): SyncTransport {
-  if (
-    transport === null ||
-    typeof transport !== "object" ||
-    typeof transport.pull !== "function" ||
-    typeof transport.push !== "function"
-  ) {
-    throw new TypeError("A synchronization transport must provide pull and push methods.");
-  }
-  return transport;
-}
-
+/** Validates a page returned by a caller-supplied transport. */
 function normalizePullPage(page: SyncPullPage): SyncPullPage {
   if (page === null || typeof page !== "object" || Array.isArray(page)) {
     throw new TypeError("A synchronization pull result must be an object.");

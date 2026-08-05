@@ -1,12 +1,15 @@
+const notSerializable = "Database entities must be JSON-serializable.";
+
 export function encodeEntity(entity: unknown): string {
+  let encoded: string | undefined;
   try {
-    if (!isJsonCompatible(entity)) throw new Error();
-    const encoded = JSON.stringify(entity);
-    if (encoded === undefined) throw new Error();
-    return encoded;
+    if (isJsonCompatible(entity)) encoded = JSON.stringify(entity);
   } catch (cause) {
-    throw new TypeError("Database entities must be JSON-serializable.", { cause });
+    // Accessor properties can throw while being inspected or serialized.
+    throw new TypeError(notSerializable, { cause });
   }
+  if (encoded === undefined) throw new TypeError(notSerializable);
+  return encoded;
 }
 
 export function equalJson(left: unknown, right: unknown): boolean {

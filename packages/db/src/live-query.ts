@@ -1,4 +1,5 @@
 import type { CollectionName, Database, DatabaseChange } from "./database.ts";
+import { notifyListeners } from "./listeners.ts";
 
 export type QueryDatabase<Schema> = Pick<Database<Schema>, "get" | "getAll" | "query">;
 
@@ -58,13 +59,9 @@ export function createQuery<Schema, Result>(
   let unsubscribeDatabase: (() => void) | undefined;
 
   function publish(): void {
-    for (const listener of Array.from(listeners)) {
-      try {
-        listener();
-      } catch (error) {
-        reportListenerError(error);
-      }
-    }
+    notifyListeners(listeners, "A database query listener failed.", (listener) => {
+      listener();
+    });
   }
 
   function schedule(notify: boolean): Promise<Result> {
@@ -187,15 +184,3 @@ function failure<Result>(error: unknown): DatabaseQuerySnapshot<Result> {
 }
 
 function settled(): void {}
-
-function reportListenerError(error: unknown): void {
-  try {
-    if (typeof globalThis.reportError === "function") {
-      globalThis.reportError(error);
-    } else {
-      console.error("A database query listener failed.", error);
-    }
-  } catch {
-    // Error reporting must not disrupt query updates or other listeners.
-  }
-}

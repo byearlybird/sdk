@@ -259,12 +259,12 @@ function normalizeQuery(definition: QueryDefinition): NormalizedQuery {
   const where =
     definition.where === undefined ? undefined : normalizePredicate(definition.where, new Set());
 
-  return Object.freeze({
+  return {
     ...(limit === undefined ? {} : { limit }),
     offset,
     orderBy,
     ...(where === undefined ? {} : { where }),
-  });
+  };
 }
 
 function normalizePredicate(predicate: QueryPredicate, ancestors: Set<object>): QueryPredicate {
@@ -352,7 +352,7 @@ function normalizeOrder(input: readonly QueryOrder[] | undefined): readonly Quer
   if (!normalized.some(({ field }) => field === "id")) {
     normalized.push(createQueryOrder("id", "asc"));
   }
-  return Object.freeze(normalized);
+  return normalized;
 }
 
 function normalizeCount(value: number | undefined, name: "offset", fallback: number): number;

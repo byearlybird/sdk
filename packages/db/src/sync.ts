@@ -68,14 +68,15 @@ export function normalizeSyncChanges(changes: readonly SyncChange[]): Normalized
     }
 
     const encodedEntity = change.deleted ? null : encodeEntity(change.entity);
-    return Object.freeze({
+    return {
       changeId: change.changeId,
       collection: change.collection,
       deleted: change.deleted,
       encodedEntity,
       entityId: change.entityId,
-      version: Object.freeze({ ...change.version }),
-    });
+      // Copied so a caller mutating its input cannot alter an in-flight plan.
+      version: { ...change.version },
+    };
   });
 }
 
@@ -103,39 +104,43 @@ export function normalizeAcknowledgments(changeIds: readonly string[]): string[]
   return [...unique];
 }
 
+type PlannedEntity = {
+  clearOutbox: boolean;
+  readonly collection: string;
+  current: StoredRecord | null;
+  readonly id: string;
+  readonly initial: StoredRecord | null;
+};
+
 export async function planRemoteChanges(
   connection: StorageConnection,
   initialClock: LamportClock,
   incomingChanges: readonly NormalizedSyncChange[],
 ): Promise<MutationExecution<void>> {
-  const initialRecords = new Map<string, StoredRecord | null>();
-  const currentRecords = new Map<string, StoredRecord | null>();
-  const coordinates = new Map<string, Readonly<{ collection: string; id: string }>>();
-  const changedKeys = new Set<string>();
-  const clearOutboxKeys = new Set<string>();
+  const entities = new Map<string, PlannedEntity>();
+  const changed = new Map<PlannedEntity, StoredRecord>();
   let clock = initialClock;
 
-  async function getRecord(collection: string, id: string): Promise<StoredRecord | null> {
+  async function getEntity(collection: string, id: string): Promise<PlannedEntity> {
     const key = recordKey(collection, id);
-    if (!currentRecords.has(key)) {
+    let entity = entities.get(key);
+    if (entity === undefined) {
       const record = await readStoredRecord(connection, collection, id);
-      initialRecords.set(key, record);
-      currentRecords.set(key, record);
-      coordinates.set(key, { collection, id });
+      entity = { clearOutbox: false, collection, current: record, id, initial: record };
+      entities.set(key, entity);
     }
-    return currentRecords.get(key) ?? null;
+    return entity;
   }
 
   for (const incoming of incomingChanges) {
     clock = observeVersion(clock, incoming.version);
-    const key = recordKey(incoming.collection, incoming.entityId);
-    const current = await getRecord(incoming.collection, incoming.entityId);
-    const initial = initialRecords.get(key) ?? null;
+    const entity = await getEntity(incoming.collection, incoming.entityId);
+    const { current, initial } = entity;
     if (
       initial?.outboxChangeId !== undefined &&
       compareVersions(incoming.version, initial.version) >= 0
     ) {
-      clearOutboxKeys.add(key);
+      entity.clearOutbox = true;
     }
     if (current !== null) {
       const comparison = compareVersions(incoming.version, current.version);
@@ -147,32 +152,24 @@ export async function planRemoteChanges(
       if (comparison <= 0) continue;
     }
 
-    currentRecords.set(key, {
+    const record: StoredRecord = {
       deleted: incoming.deleted,
       encodedEntity: incoming.encodedEntity,
       version: incoming.version,
-    });
-    changedKeys.add(key);
+    };
+    entity.current = record;
+    changed.set(entity, record);
   }
 
   const commands = [];
   const changes: UntypedDatabaseChange[] = [];
-  for (const key of changedKeys) {
-    const coordinate = coordinates.get(key);
-    const current = currentRecords.get(key);
-    const initial = initialRecords.get(key) ?? null;
-    if (coordinate === undefined || current === undefined || current === null) {
-      throw new TypeError("Remote sync planning produced an invalid entity state.");
-    }
-    commands.push(createEntityCommand(coordinate.collection, coordinate.id, current));
-    const visibleChange = classifyVisibleChange(initial, current, coordinate);
+  for (const [entity, record] of changed) {
+    commands.push(createEntityCommand(entity.collection, entity.id, record));
+    const visibleChange = classifyVisibleChange(entity.initial, record, entity);
     if (visibleChange !== undefined) changes.push(visibleChange);
   }
-  for (const key of clearOutboxKeys) {
-    const coordinate = coordinates.get(key);
-    if (coordinate !== undefined) {
-      commands.push(createClearOutboxCommand(coordinate.collection, coordinate.id));
-    }
+  for (const { clearOutbox, collection, id } of entities.values()) {
+    if (clearOutbox) commands.push(createClearOutboxCommand(collection, id));
   }
   if (clock.counter !== initialClock.counter) commands.push(createClockCommand(clock));
 

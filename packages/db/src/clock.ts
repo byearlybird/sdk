@@ -16,7 +16,7 @@ export type ClockTick = Readonly<{
 export function createLamportClock(counter: number, replicaId: string): LamportClock {
   assertCounter(counter);
   if (replicaId.length === 0) throw new TypeError("A replica ID cannot be empty.");
-  return Object.freeze({ counter, replicaId });
+  return { counter, replicaId };
 }
 
 export function compareVersions(left: Version, right: Version): number {
@@ -25,13 +25,13 @@ export function compareVersions(left: Version, right: Version): number {
   return left.replicaId < right.replicaId ? -1 : 1;
 }
 
+/** Callers pass versions that {@link assertVersion} has already accepted. */
 export function observeVersion(clock: LamportClock, version: Version): LamportClock {
-  assertVersion(version);
   if (version.counter >= Number.MAX_SAFE_INTEGER) {
     throw new RangeError("The remote Lamport clock counter cannot be advanced.");
   }
   return version.counter > clock.counter
-    ? Object.freeze({ counter: version.counter, replicaId: clock.replicaId })
+    ? { counter: version.counter, replicaId: clock.replicaId }
     : clock;
 }
 
@@ -40,14 +40,11 @@ export function tickLamportClock(clock: LamportClock): ClockTick {
     throw new RangeError("The Lamport clock counter overflowed.");
   }
 
-  const nextClock = Object.freeze({
-    counter: clock.counter + 1,
-    replicaId: clock.replicaId,
-  });
-  return Object.freeze({
+  const nextClock = { counter: clock.counter + 1, replicaId: clock.replicaId };
+  return {
     clock: nextClock,
-    version: Object.freeze({ counter: nextClock.counter, replicaId: nextClock.replicaId }),
-  });
+    version: { counter: nextClock.counter, replicaId: nextClock.replicaId },
+  };
 }
 
 export function assertVersion(version: Version): void {

@@ -1,4 +1,5 @@
 import type { LamportClock } from "./clock.ts";
+import { notifyListeners } from "./listeners.ts";
 import { planLocalMutations, prepareMutation } from "./mutation.ts";
 import type { MutationIntent } from "./mutation.ts";
 import { compileQuery, getQueryBuilder } from "./query.ts";
@@ -170,13 +171,9 @@ export function createDatabase<Schema>(options: DatabaseOptions): Database<Schem
   }
 
   function notifyChange(change: DatabaseChange<Schema>): void {
-    for (const listener of Array.from(changeListeners)) {
-      try {
-        listener(change);
-      } catch (error) {
-        reportListenerError(error);
-      }
-    }
+    notifyListeners(changeListeners, "A database change listener failed.", (listener) => {
+      listener(change);
+    });
   }
 
   async function executeMutations(
@@ -317,16 +314,4 @@ function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
     "then" in value &&
     typeof value.then === "function"
   );
-}
-
-function reportListenerError(error: unknown): void {
-  try {
-    if (typeof globalThis.reportError === "function") {
-      globalThis.reportError(error);
-    } else {
-      console.error("A database change listener failed.", error);
-    }
-  } catch {
-    // Error reporting must not make a committed database write appear to fail.
-  }
 }

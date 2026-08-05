@@ -78,7 +78,7 @@ describe("string", () => {
       value: "do",
     });
     expect(() => string({ values: ["do", "done"], default: "doing" } as never)).toThrow(
-      'Default must be one of: "do", "done".',
+      'Invalid default. Expected one of: "do", "done".',
     );
   });
 });
@@ -261,6 +261,29 @@ describe("modifiers", () => {
 
     expectTypeOf<InferOutput<typeof nullableNumberSchema>>().toEqualTypeOf<number | null>();
     expect(nullableNumberSchema.validate(null)).toEqual({ value: null });
+  });
+
+  it("rejects an invalid nullable option", () => {
+    const createInvalidSchema = () => {
+      // @ts-expect-error The nullable option must be a boolean.
+      string({ nullable: "true" });
+    };
+
+    expectTypeOf(createInvalidSchema).toBeFunction();
+    expect(() => string({ nullable: "true" } as never)).toThrow("Invalid nullable option.");
+    expect(() => number({ nullable: "true" } as never)).toThrow("Invalid nullable option.");
+    expect(() => boolean({ nullable: "true" } as never)).toThrow("Invalid nullable option.");
+  });
+
+  it("rejects an invalid values option", () => {
+    const createInvalidSchema = () => {
+      // @ts-expect-error The values option must be an array.
+      string({ values: "do" });
+    };
+
+    expectTypeOf(createInvalidSchema).toBeFunction();
+    expect(() => string({ values: "do" } as never)).toThrow("Invalid values option.");
+    expect(() => number({ values: 1 } as never)).toThrow("Invalid values option.");
   });
 
   it("infers input and output types", () => {

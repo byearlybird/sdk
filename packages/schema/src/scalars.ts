@@ -1,5 +1,6 @@
 import type { Schema } from "./schema.ts";
 import {
+  assertBooleanOption,
   createFailure,
   type DefaultableInput,
   defineSchema,
@@ -10,7 +11,6 @@ import {
 } from "./internal.ts";
 
 type ScalarValue = string | number | boolean;
-type LengthPrefix = "" | "length ";
 
 interface EnumeratedScalarOptions<Value extends ScalarValue> extends SchemaOptions<Value> {
   /** Restrict the value to a fixed set, narrowing the inferred type. */
@@ -61,99 +61,110 @@ type EnumeratedDefaultConstraint<BaseValue extends ScalarValue, Options> =
     ? unknown
     : never;
 
+/**
+ * Bounds applied to a scalar. `kind` says how the bounds themselves are
+ * validated: `"length"` bounds must be nonnegative integers, `"value"` bounds
+ * must be finite.
+ */
+type ScalarBounds = Readonly<{
+  kind: "length" | "value";
+  maximum?: number;
+  minimum?: number;
+}>;
+
+type ScalarDefinition<Value extends ScalarValue> = Readonly<{
+  allowedValues?: readonly Value[];
+  bounds?: ScalarBounds;
+  expectedTypeMessage: string;
+  integer?: boolean;
+  isExpectedType: (value: unknown) => value is Value;
+  options: SchemaOptions<Value> | undefined;
+  pattern?: RegExp;
+}>;
+
 function defineScalarSchema<Value extends ScalarValue, Input, Output>(
-  expectedTypeMessage: string,
-  isExpectedType: (value: unknown) => value is Value,
-  options: SchemaOptions<Value> | undefined,
-  allowedValues?: readonly Value[],
-  minimum?: number,
-  maximum?: number,
-  integer?: boolean,
-  // The prefix also identifies string-length bounds without another runtime argument.
-  lengthPrefix: LengthPrefix = "",
-  pattern?: RegExp,
+  definition: ScalarDefinition<Value>,
 ): Schema<Input, Output> {
-  const allowedValuesSnapshot = allowedValues === undefined ? undefined : [...allowedValues];
+  const { bounds, expectedTypeMessage, integer, isExpectedType, options, pattern } = definition;
+
+  assertBooleanOption(integer, "integer");
+  if (definition.allowedValues !== undefined && !Array.isArray(definition.allowedValues)) {
+    throw new TypeError("Invalid values option.");
+  }
   if (pattern !== undefined && !(pattern instanceof RegExp)) {
     throw new TypeError("Invalid pattern.");
   }
-  if (integer !== undefined && typeof integer !== "boolean") {
-    throw new TypeError("Invalid integer option.");
-  }
-  const patternSnapshot = pattern && new RegExp(pattern);
+  assertBounds(bounds);
 
-  if (allowedValuesSnapshot?.some((allowedValue) => !isExpectedType(allowedValue))) {
+  // Copied so a caller mutating its own input cannot alter the schema afterwards.
+  const allowedValues = definition.allowedValues && [...definition.allowedValues];
+  // Copied so validation never advances a caller's own `lastIndex`.
+  const patternCopy = pattern && new RegExp(pattern);
+
+  if (allowedValues?.some((allowedValue) => !isExpectedType(allowedValue))) {
     throw new TypeError(`Invalid allowed value. ${expectedTypeMessage}`);
   }
 
+  /** Returns why `value` is invalid, or `undefined` when it is acceptable. */
+  const findIssueMessage = (value: unknown): string | undefined => {
+    if (!isExpectedType(value)) return expectedTypeMessage;
+    if (allowedValues !== undefined && !allowedValues.includes(value)) {
+      return `Expected one of: ${formatAllowedValues(allowedValues)}.`;
+    }
+    if (integer === true && !Number.isInteger(value)) return "Expected an integer.";
+    const boundMessage = getBoundMessage(value, bounds);
+    if (boundMessage !== undefined) return boundMessage;
+    if (patternCopy !== undefined && !matchesPattern(value, patternCopy)) {
+      return "Expected to match pattern.";
+    }
+    return undefined;
+  };
+
+  // A default is substituted without revalidation, so it must hold on its own.
+  if (options !== undefined && "default" in options && options.default !== null) {
+    const message = findIssueMessage(options.default);
+    if (message !== undefined) throw new TypeError(`Invalid default. ${message}`);
+  }
+
+  return defineSchema<Input, Output>((value) => {
+    const message = findIssueMessage(value);
+    return message === undefined ? { value } : createFailure(message);
+  }, options);
+}
+
+function assertBounds(bounds: ScalarBounds | undefined): void {
+  if (bounds === undefined) return;
+  const { kind, maximum, minimum } = bounds;
+  const isValidBound = (bound: number | undefined): boolean =>
+    bound === undefined ||
+    (kind === "length" ? Number.isSafeInteger(bound) && bound >= 0 : Number.isFinite(bound));
+
   if (
-    [minimum, maximum].some(
-      (bound) =>
-        bound !== undefined &&
-        (lengthPrefix ? !Number.isSafeInteger(bound) || bound < 0 : !Number.isFinite(bound)),
-    ) ||
+    !isValidBound(minimum) ||
+    !isValidBound(maximum) ||
     (minimum !== undefined && maximum !== undefined && minimum > maximum)
   ) {
     throw new TypeError("Invalid bounds.");
   }
-
-  if (options !== undefined && "default" in options && options.default !== null) {
-    const defaultValue = options.default;
-    if (!isExpectedType(defaultValue)) {
-      throw new TypeError(`Invalid default. ${expectedTypeMessage}`);
-    }
-    if (allowedValuesSnapshot && !allowedValuesSnapshot.includes(defaultValue)) {
-      throw new TypeError(`Default must be one of: ${formatAllowedValues(allowedValuesSnapshot)}.`);
-    }
-    const integerMessage = getIntegerMessage(defaultValue, integer);
-    if (integerMessage) throw new TypeError(`Invalid default. ${integerMessage}`);
-    const boundMessage = getBoundMessage(defaultValue, minimum, maximum, lengthPrefix);
-    if (boundMessage) throw new TypeError(`Invalid default. ${boundMessage}`);
-    if (patternSnapshot && !matchesPattern(defaultValue as string, patternSnapshot)) {
-      throw new TypeError("Invalid default. Expected to match pattern.");
-    }
-  }
-
-  return defineSchema<Input, Output>((value) => {
-    if (!isExpectedType(value)) return createFailure(expectedTypeMessage);
-    if (allowedValuesSnapshot && !allowedValuesSnapshot.includes(value)) {
-      return createFailure(`Expected one of: ${formatAllowedValues(allowedValuesSnapshot)}.`);
-    }
-    const integerMessage = getIntegerMessage(value, integer);
-    if (integerMessage) return createFailure(integerMessage);
-    const boundMessage = getBoundMessage(value, minimum, maximum, lengthPrefix);
-    if (boundMessage) return createFailure(boundMessage);
-    if (patternSnapshot && !matchesPattern(value as string, patternSnapshot)) {
-      return createFailure("Expected to match pattern.");
-    }
-    return { value };
-  }, options);
 }
 
-function getIntegerMessage(value: ScalarValue, integer: boolean | undefined): string | undefined {
-  if (integer && !Number.isInteger(value)) {
-    return "Expected an integer.";
-  }
-}
-
-function matchesPattern(value: string, pattern: RegExp): boolean {
+function matchesPattern(value: ScalarValue, pattern: RegExp): boolean {
+  // Patterns constrain strings only; no other scalar can violate one.
+  if (typeof value !== "string") return true;
   pattern.lastIndex = 0;
   return pattern.test(value);
 }
 
-function getBoundMessage(
-  value: ScalarValue,
-  minimum: number | undefined,
-  maximum: number | undefined,
-  lengthPrefix: LengthPrefix,
-): string | undefined {
-  const size = lengthPrefix ? (value as string).length : (value as number);
-  if (minimum !== undefined && size < minimum) {
-    return `Expected ${lengthPrefix}at least ${minimum}.`;
-  }
-  if (maximum !== undefined && size > maximum) {
-    return `Expected ${lengthPrefix}at most ${maximum}.`;
-  }
+function getBoundMessage(value: ScalarValue, bounds: ScalarBounds | undefined): string | undefined {
+  if (bounds === undefined) return undefined;
+  const { maximum, minimum } = bounds;
+  const measuresLength = typeof value === "string";
+  const size = measuresLength ? value.length : Number(value);
+  const prefix = measuresLength ? "length " : "";
+
+  if (minimum !== undefined && size < minimum) return `Expected ${prefix}at least ${minimum}.`;
+  if (maximum !== undefined && size > maximum) return `Expected ${prefix}at most ${maximum}.`;
+  return undefined;
 }
 
 function formatAllowedValues(allowedValues: readonly ScalarValue[]): string {
@@ -164,32 +175,28 @@ function formatAllowedValues(allowedValues: readonly ScalarValue[]): string {
 export function string<const Options extends StringOptions = {}>(
   options?: Options & NullDefaultConstraint<Options> & EnumeratedDefaultConstraint<string, Options>,
 ): Schema<ScalarInput<string, Options>, ScalarOutput<string, Options>> {
-  return defineScalarSchema<string, ScalarInput<string, Options>, ScalarOutput<string, Options>>(
-    "Expected a string.",
-    (value): value is string => typeof value === "string",
+  return defineScalarSchema<string, ScalarInput<string, Options>, ScalarOutput<string, Options>>({
+    allowedValues: options?.values,
+    bounds: { kind: "length", maximum: options?.maxLength, minimum: options?.minLength },
+    expectedTypeMessage: "Expected a string.",
+    isExpectedType: (value): value is string => typeof value === "string",
     options,
-    options?.values,
-    options?.minLength,
-    options?.maxLength,
-    undefined,
-    "length ",
-    options?.pattern,
-  );
+    pattern: options?.pattern,
+  });
 }
 
 /** A finite number schema. Rejects `NaN` and `Infinity`. */
 export function number<const Options extends NumberOptions = {}>(
   options?: Options & NullDefaultConstraint<Options> & EnumeratedDefaultConstraint<number, Options>,
 ): Schema<ScalarInput<number, Options>, ScalarOutput<number, Options>> {
-  return defineScalarSchema<number, ScalarInput<number, Options>, ScalarOutput<number, Options>>(
-    "Expected a finite number.",
-    (value): value is number => typeof value === "number" && Number.isFinite(value),
+  return defineScalarSchema<number, ScalarInput<number, Options>, ScalarOutput<number, Options>>({
+    allowedValues: options?.values,
+    bounds: { kind: "value", maximum: options?.max, minimum: options?.min },
+    expectedTypeMessage: "Expected a finite number.",
+    integer: options?.integer,
+    isExpectedType: (value): value is number => typeof value === "number" && Number.isFinite(value),
     options,
-    options?.values,
-    options?.min,
-    options?.max,
-    options?.integer,
-  );
+  });
 }
 
 /** A boolean schema. */
@@ -197,8 +204,10 @@ export function boolean<const Options extends SchemaOptions<boolean> = {}>(
   options?: Options & NullDefaultConstraint<Options>,
 ): Schema<ScalarInput<boolean, Options>, ScalarOutput<boolean, Options>> {
   return defineScalarSchema<boolean, ScalarInput<boolean, Options>, ScalarOutput<boolean, Options>>(
-    "Expected a boolean.",
-    (value): value is boolean => typeof value === "boolean",
-    options,
+    {
+      expectedTypeMessage: "Expected a boolean.",
+      isExpectedType: (value): value is boolean => typeof value === "boolean",
+      options,
+    },
   );
 }

@@ -11,6 +11,16 @@ export function createFailure(validationMessage: string): StandardSchemaV1.Failu
 }
 
 /**
+ * Rejects a boolean option whose runtime value contradicts its declared type.
+ * Types alone do not protect callers consuming this package from JavaScript.
+ */
+export function assertBooleanOption(value: unknown, optionName: string): void {
+  if (value !== undefined && typeof value !== "boolean") {
+    throw new TypeError(`Invalid ${optionName} option.`);
+  }
+}
+
+/**
  * Wraps a type-specific validator with shared `default` and `nullable`
  * handling and packages it as a {@link Schema}.
  */
@@ -18,6 +28,7 @@ export function defineSchema<Input, Output>(
   validateResolvedValue: (value: unknown) => StandardSchemaV1.Result<unknown>,
   options: SchemaOptions<unknown> | undefined,
 ): Schema<Input, Output> {
+  assertBooleanOption(options?.nullable, "nullable");
   const hasDefault = options !== undefined && "default" in options;
   const defaultValue = options?.default;
   const nullable = options?.nullable === true;

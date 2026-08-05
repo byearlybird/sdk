@@ -2,6 +2,7 @@ import type { StandardSchemaV1 } from "@standard-schema/spec";
 
 import type { InferInput, InferOutput, Schema } from "./schema.ts";
 import {
+  assertBooleanOption,
   createFailure,
   type DefaultableInput,
   defineSchema,
@@ -35,9 +36,7 @@ export function array<
 ): Schema<ArrayInput<ItemSchema, Options>, ArrayOutput<ItemSchema, Options>> {
   const itemSchemaProps = itemSchema["~standard"];
   const uniqueItems = options?.uniqueItems;
-  if (uniqueItems !== undefined && typeof uniqueItems !== "boolean") {
-    throw new TypeError("Invalid uniqueItems option.");
-  }
+  assertBooleanOption(uniqueItems, "uniqueItems");
 
   return defineSchema<ArrayInput<ItemSchema, Options>, ArrayOutput<ItemSchema, Options>>(
     (value) => {

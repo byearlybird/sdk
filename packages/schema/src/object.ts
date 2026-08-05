@@ -64,12 +64,16 @@ export function object<
   fields: SchemaShape & StringKeyConstraint<SchemaShape>,
   options?: Options & NullDefaultConstraint<Options>,
 ): Schema<ObjectInput<SchemaShape, Options>, ObjectOutput<SchemaShape, Options>> {
-  const fieldNames = Reflect.ownKeys(fields);
-  if (fieldNames.some((fieldName) => typeof fieldName === "symbol")) {
-    throw new TypeError("Object schema fields must use string keys.");
+  const fieldNames: string[] = [];
+  for (const fieldName of Reflect.ownKeys(fields)) {
+    if (typeof fieldName !== "string") {
+      throw new TypeError("Object schema fields must use string keys.");
+    }
+    fieldNames.push(fieldName);
   }
 
-  const fieldEntries = (fieldNames as string[]).map(
+  const knownFieldNames = new Set(fieldNames);
+  const fieldEntries = fieldNames.map(
     (fieldName) => [fieldName, fields[fieldName]["~standard"]] as const,
   );
 
@@ -83,7 +87,7 @@ export function object<
       const validationIssues: StandardSchemaV1.Issue[] = [];
 
       for (const fieldName of Reflect.ownKeys(value)) {
-        if (typeof fieldName !== "string" || !fieldNames.includes(fieldName)) {
+        if (typeof fieldName !== "string" || !knownFieldNames.has(fieldName)) {
           const formattedFieldName =
             typeof fieldName === "symbol" ? String(fieldName) : JSON.stringify(fieldName);
           validationIssues.push({

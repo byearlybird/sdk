@@ -247,6 +247,24 @@ importers:
 
   apps/demo-client:
     dependencies:
+      '@byearlybird/components':
+        specifier: workspace:*
+        version: link:../../packages/components
+      '@byearlybird/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@byearlybird/db-react':
+        specifier: workspace:*
+        version: link:../../packages/db-react
+      '@byearlybird/schema':
+        specifier: workspace:*
+        version: link:../../packages/schema
+      '@fontsource-variable/karla':
+        specifier: 5.3.0
+        version: 5.3.0
+      '@sqlite.org/sqlite-wasm':
+        specifier: 3.53.0-build1
+        version: 3.53.0-build1
       react:
         specifier: 'catalog:'
         version: 19.2.8

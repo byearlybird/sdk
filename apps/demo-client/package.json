@@ -9,6 +9,12 @@
     "preview": "vp preview"
   },
   "dependencies": {
+    "@byearlybird/components": "workspace:*",
+    "@byearlybird/db": "workspace:*",
+    "@byearlybird/db-react": "workspace:*",
+    "@byearlybird/schema": "workspace:*",
+    "@fontsource-variable/karla": "5.3.0",
+    "@sqlite.org/sqlite-wasm": "3.53.0-build1",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

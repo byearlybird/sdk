@@ -1,27 +1,71 @@
+@import "@fontsource-variable/karla";
+@import "@byearlybird/components/style.css";
+
 :root {
-  color: #17211b;
-  background: #f7f6ef;
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  color: var(--components-color-text);
+  background: var(--components-color-background);
+  font-family: var(--components-font-family);
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
-  display: grid;
-  min-width: 320px;
-  min-height: 100vh;
   margin: 0;
-  place-items: center;
 }
 
-main {
-  text-align: center;
+.todo-app {
+  width: 100%;
+  max-width: calc(var(--size-10) * 20);
+  padding: var(--size-8);
+  margin-inline: auto;
 }
 
 h1 {
-  margin-bottom: 0.25rem;
+  margin: 0;
+  font-size: calc(var(--scale-2) * 3);
 }
 
-p {
-  margin-top: 0;
+.add-todo {
+  display: flex;
+  gap: var(--size-2);
+  margin-block: var(--size-8);
+}
+
+.add-todo input {
+  flex: 1;
+}
+
+.error {
+  color: var(--color-red-700);
+}
+
+.todo-list {
+  padding: 0;
+  list-style: none;
+}
+
+.todo-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2);
+  padding-block: var(--size-2);
+  border-bottom: var(--size-px) solid var(--components-color-border);
+}
+
+.todo-label {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: var(--size-2);
+}
+
+.todo-label .completed {
+  color: var(--components-color-text-muted);
+  text-decoration: line-through;
+}
+
+footer {
+  margin-top: var(--size-4);
 }

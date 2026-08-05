@@ -251,6 +251,7 @@ function createDatabaseFixture(): {
       get,
       getAll,
       getPendingChanges: async () => [],
+      getSyncCheckpoint: async () => null,
       insert: async () => undefined,
       onChange: (listener) => {
         changeListeners.add(listener);

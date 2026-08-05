@@ -1,5 +1,6 @@
 export { createDatabase } from "./database.ts";
 export type {
+  ApplyRemoteChangesOptions,
   CollectionName,
   Database,
   DatabaseChange,
@@ -7,6 +8,7 @@ export type {
   DatabaseOptions,
   DatabasePatch,
 } from "./database.ts";
+export { createInMemorySyncRelay, createInMemorySynchronizer } from "./in-memory-synchronizer.ts";
 export { createQuery } from "./live-query.ts";
 export type { DatabaseQuery, DatabaseQuerySnapshot, QueryDatabase } from "./live-query.ts";
 export type {
@@ -17,6 +19,15 @@ export type {
   QueryScalar,
 } from "./query.ts";
 export type { SyncChange } from "./sync.ts";
+export { createSynchronizer } from "./synchronizer.ts";
+export type {
+  SyncPullPage,
+  SyncPullRequest,
+  SyncPushRequest,
+  SyncTransport,
+  Synchronizer,
+  SynchronizerOptions,
+} from "./synchronizer.ts";
 export type {
   SqliteBinding,
   SqliteRow,

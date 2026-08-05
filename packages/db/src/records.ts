@@ -61,6 +61,13 @@ const createSyncOutboxTable = `
   )
 `;
 
+const createSyncCheckpointTable = `
+  CREATE TABLE IF NOT EXISTS sync_checkpoint (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    value TEXT NOT NULL
+  )
+`;
+
 const upsertEntitySql = `
   INSERT INTO entities (
     collection,
@@ -99,6 +106,7 @@ export async function initializeDatabase(
     await connection.run(createEntitiesTable);
     await connection.run(createSyncStateTable);
     await connection.run(createSyncOutboxTable);
+    await connection.run(createSyncCheckpointTable);
     await connection.run(
       "INSERT OR IGNORE INTO sync_state (id, counter, replica_id) VALUES (1, 0, ?)",
       [crypto.randomUUID()],
@@ -183,6 +191,11 @@ export async function readPendingChanges(
   return rows.map(readSyncChange);
 }
 
+export async function readSyncCheckpoint(connection: StorageConnection): Promise<string | null> {
+  const [row] = await connection.query("SELECT value FROM sync_checkpoint WHERE id = 1");
+  return row === undefined ? null : readString(row, "value");
+}
+
 export function createEntityCommand(
   collection: string,
   id: string,
@@ -235,6 +248,18 @@ export function createClockCommand(clock: LamportClock): StorageCommand {
     bindings: [clock.counter, clock.replicaId],
     kind: "run",
     sql: updateClockSql,
+  };
+}
+
+export function createSyncCheckpointCommand(checkpoint: string): StorageCommand {
+  return {
+    bindings: [checkpoint],
+    kind: "run",
+    sql: `
+      INSERT INTO sync_checkpoint (id, value)
+      VALUES (1, ?)
+      ON CONFLICT (id) DO UPDATE SET value = excluded.value
+    `,
   };
 }
 

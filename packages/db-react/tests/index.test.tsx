@@ -87,6 +87,7 @@ function createDatabaseFixture(): Database<TestSchema> {
     get: async () => null,
     getAll: async () => [],
     getPendingChanges: async () => [],
+    getSyncCheckpoint: async () => null,
     insert: async () => undefined,
     onChange: () => () => undefined,
     patch: async () => false,

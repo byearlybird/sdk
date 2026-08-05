@@ -86,6 +86,13 @@ export function normalizePendingLimit(limit: number): number {
   return limit;
 }
 
+export function normalizeSyncCheckpoint(checkpoint: unknown): string {
+  if (typeof checkpoint !== "string" || checkpoint.length === 0) {
+    throw new TypeError("A synchronization checkpoint must be a nonempty string.");
+  }
+  return checkpoint;
+}
+
 export function normalizeAcknowledgments(changeIds: readonly string[]): string[] {
   if (!Array.isArray(changeIds)) throw new TypeError("Sync acknowledgments must be an array.");
   const unique = new Set<string>();

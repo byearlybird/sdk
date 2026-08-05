@@ -34,10 +34,12 @@ function assertSchemaInference(database: Database<TestSchema>): void {
     ),
   }));
   const pending = database.getPendingChanges(100);
+  const checkpoint = database.getSyncCheckpoint();
   expectTypeOf(habit).toEqualTypeOf<Promise<TestSchema["habits"] | null>>();
   expectTypeOf(settings).toEqualTypeOf<Promise<DatabaseEntry<TestSchema["settings"]>[]>>();
   expectTypeOf(queried).toEqualTypeOf<Promise<DatabaseEntry<TestSchema["habits"]>[]>>();
   expectTypeOf(pending).toEqualTypeOf<Promise<SyncChange[]>>();
+  expectTypeOf(checkpoint).toEqualTypeOf<Promise<string | null>>();
   expectTypeOf<DatabasePatch<TestSchema["habits"]>>().toEqualTypeOf<
     Partial<TestSchema["habits"]>
   >();
@@ -51,6 +53,7 @@ function assertSchemaInference(database: Database<TestSchema>): void {
   expectTypeOf(unsubscribe).toEqualTypeOf<() => void>();
 
   void database.insert("habits", "habit-1", { frequency: "daily", name: "Read" });
+  void database.applyRemoteChanges([], { checkpoint: "cursor-1" });
   void database.patch("habits", "habit-1", { frequency: "weekly" });
   // @ts-expect-error The document must match the selected collection.
   void database.insert("habits", "habit-1", { theme: "dark" });

@@ -5,15 +5,18 @@ import { compileQuery, getQueryBuilder } from "./query.ts";
 import type { QueryBuilder, QueryDefinition } from "./query.ts";
 import {
   createAcknowledgeCommand,
+  createSyncCheckpointCommand,
   decodeEntity,
   initializeDatabase,
   readPendingChanges,
+  readSyncCheckpoint,
   readString,
 } from "./records.ts";
 import type { MutationExecution } from "./records.ts";
 import {
   normalizeAcknowledgments,
   normalizePendingLimit,
+  normalizeSyncCheckpoint,
   normalizeSyncChanges,
   planRemoteChanges,
 } from "./sync.ts";
@@ -58,7 +61,10 @@ export type DatabaseChange<Schema> = {
 export type Database<Schema> = {
   readonly ready: Promise<void>;
   acknowledgeChanges(changeIds: readonly string[]): Promise<void>;
-  applyRemoteChanges(changes: readonly SyncChange[]): Promise<void>;
+  applyRemoteChanges(
+    changes: readonly SyncChange[],
+    options?: ApplyRemoteChangesOptions,
+  ): Promise<void>;
   batch(build: (mutation: BatchMutator<Schema>) => void): Promise<void>;
   close(): Promise<void>;
   delete<Collection extends CollectionName<Schema>>(
@@ -73,6 +79,7 @@ export type Database<Schema> = {
     collection: Collection,
   ): Promise<DatabaseEntry<Schema[Collection]>[]>;
   getPendingChanges(limit: number): Promise<SyncChange[]>;
+  getSyncCheckpoint(): Promise<string | null>;
   insert<Collection extends CollectionName<Schema>>(
     collection: Collection,
     id: string,
@@ -89,6 +96,10 @@ export type Database<Schema> = {
     build: (query: QueryBuilder<Schema[Collection]>) => QueryDefinition,
   ): Promise<DatabaseEntry<Schema[Collection]>[]>;
 };
+
+export type ApplyRemoteChangesOptions = Readonly<{
+  checkpoint?: string;
+}>;
 
 export type DatabaseOptions = {
   name: string;
@@ -187,12 +198,20 @@ export function createDatabase<Schema>(options: DatabaseOptions): Database<Schem
         value: undefined,
       }));
     },
-    applyRemoteChanges: async (changes) => {
+    applyRemoteChanges: async (changes, options) => {
       const normalized = normalizeSyncChanges(changes);
-      if (normalized.length === 0) return;
-      await enqueueMutation((connection, clock) =>
-        planRemoteChanges(connection, clock, normalized),
-      );
+      const checkpoint =
+        options?.checkpoint === undefined ? undefined : normalizeSyncCheckpoint(options.checkpoint);
+      if (normalized.length === 0 && checkpoint === undefined) return;
+      await enqueueMutation(async (connection, clock) => {
+        const execution = await planRemoteChanges(connection, clock, normalized);
+        return checkpoint === undefined
+          ? execution
+          : {
+              ...execution,
+              commands: [...execution.commands, createSyncCheckpointCommand(checkpoint)],
+            };
+      });
     },
     batch: async (build) => {
       const intents: MutationIntent[] = [];
@@ -230,6 +249,10 @@ export function createDatabase<Schema>(options: DatabaseOptions): Database<Schem
       const normalizedLimit = normalizePendingLimit(limit);
       const database = await getReadableConnection();
       return readPendingChanges(database, normalizedLimit);
+    },
+    getSyncCheckpoint: async () => {
+      const database = await getReadableConnection();
+      return readSyncCheckpoint(database);
     },
     query: async (collection, build) => {
       return readEntries(collection, build(getQueryBuilder<Schema[typeof collection]>()));

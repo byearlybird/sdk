@@ -28,41 +28,42 @@ const database = createDatabase<TodoDatabase>({
 function App() {
   const database = useDatabase();
   const [title, setTitle] = useState("");
-  const [error, setError] = useState<string>();
-  const [isAdding, setIsAdding] = useState(false);
   const todos = useSuspenseQuery((readonlyDatabase) =>
     readonlyDatabase.query("todos", (query) => ({ orderBy: [query.asc("createdAt")] })),
   );
   const remaining = todos.filter(({ data }) => !data.completed).length;
+  const completed = todos.length - remaining;
 
   async function addTodo(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const result = todoSchema.validate({
+    const todo: Todo = {
       completed: false,
       createdAt: new Date().toISOString(),
       title: title.trim(),
-    });
+    };
 
-    if (result.issues) {
-      setError(result.issues[0]?.message ?? "Enter a to-do.");
-      return;
-    }
+    if (todo.title.length === 0) return;
 
-    setIsAdding(true);
-    setError(undefined);
-    try {
-      await database.insert("todos", crypto.randomUUID(), result.value);
-      setTitle("");
-    } catch (cause) {
-      setError(toErrorMessage(cause));
-    } finally {
-      setIsAdding(false);
-    }
+    await database.insert("todos", crypto.randomUUID(), todo);
+    setTitle("");
   }
 
-  function runMutation(mutation: Promise<unknown>) {
-    setError(undefined);
-    void mutation.catch((cause: unknown) => setError(toErrorMessage(cause)));
+  function setTodoCompleted(id: string, completed: boolean) {
+    void database.patch("todos", id, { completed });
+  }
+
+  function deleteTodo(id: string) {
+    void database.delete("todos", id);
+  }
+
+  function clearCompleted() {
+    const completedTodoIds = todos.filter(({ data }) => data.completed).map(({ id }) => id);
+
+    void database.batch((mutation) => {
+      for (const id of completedTodoIds) {
+        mutation.delete("todos", id);
+      }
+    });
   }
 
   return (
@@ -78,18 +79,11 @@ function App() {
           maxLength={120}
           onChange={(event) => setTitle(event.target.value)}
           placeholder="What needs doing?"
+          required
           value={title}
         />
-        <Button disabled={isAdding} type="submit">
-          Add
-        </Button>
+        <Button type="submit">Add</Button>
       </form>
-
-      {error ? (
-        <p className="error" role="alert">
-          {error}
-        </p>
-      ) : null}
 
       {todos.length === 0 ? (
         <p className="empty">Nothing to do yet.</p>
@@ -100,15 +94,13 @@ function App() {
               <label className="todo-label">
                 <Checkbox
                   checked={todo.completed}
-                  onCheckedChange={(checked) =>
-                    runMutation(database.patch("todos", id, { completed: checked }))
-                  }
+                  onCheckedChange={(checked) => setTodoCompleted(id, checked)}
                 />
                 <span className={todo.completed ? "completed" : undefined}>{todo.title}</span>
               </label>
               <Button
                 aria-label={`Delete ${todo.title}`}
-                onClick={() => runMutation(database.delete("todos", id))}
+                onClick={() => deleteTodo(id)}
                 size="icon"
                 type="button"
                 variant="secondary"
@@ -120,15 +112,18 @@ function App() {
         </ul>
       )}
 
-      <footer>
-        {remaining} {remaining === 1 ? "item" : "items"} left
+      <footer className="todo-footer">
+        <span>
+          {remaining} {remaining === 1 ? "item" : "items"} left
+        </span>
+        {completed > 0 ? (
+          <Button onClick={clearCompleted} type="button" variant="secondary">
+            Clear completed
+          </Button>
+        ) : null}
       </footer>
     </main>
   );
-}
-
-function toErrorMessage(value: unknown): string {
-  return value instanceof Error ? value.message : "Something went wrong.";
 }
 
 const root = document.querySelector<HTMLDivElement>("#root");

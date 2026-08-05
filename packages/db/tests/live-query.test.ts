@@ -243,11 +243,14 @@ function createDatabaseFixture(): {
   return {
     database: {
       ready: Promise.resolve(),
+      acknowledgeChanges: async () => undefined,
+      applyRemoteChanges: async () => undefined,
       batch: async () => undefined,
       close: async () => undefined,
       delete: async () => false,
       get,
       getAll,
+      getPendingChanges: async () => [],
       insert: async () => undefined,
       onChange: (listener) => {
         changeListeners.add(listener);

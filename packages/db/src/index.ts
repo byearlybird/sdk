@@ -16,6 +16,7 @@ export type {
   QueryPredicate,
   QueryScalar,
 } from "./query.ts";
+export type { SyncChange } from "./sync.ts";
 export type {
   SqliteBinding,
   SqliteRow,
@@ -25,3 +26,4 @@ export type {
   StorageConnection,
   StorageRunResult,
 } from "./storage.ts";
+export type { Version } from "./clock.ts";

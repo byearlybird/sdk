@@ -79,11 +79,14 @@ describe("createDatabaseReact", () => {
 function createDatabaseFixture(): Database<TestSchema> {
   return {
     ready: Promise.resolve(),
+    acknowledgeChanges: async () => undefined,
+    applyRemoteChanges: async () => undefined,
     batch: async () => undefined,
     close: async () => undefined,
     delete: async () => false,
     get: async () => null,
     getAll: async () => [],
+    getPendingChanges: async () => [],
     insert: async () => undefined,
     onChange: () => () => undefined,
     patch: async () => false,

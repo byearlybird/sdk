@@ -177,7 +177,7 @@ export function getQueryBuilder<Data>(): QueryBuilder<Data> {
 export function compileQuery(collection: string, definition: QueryDefinition): CompiledQuery {
   const query = normalizeQuery(definition);
   const bindings: SqliteBinding[] = [collection];
-  const predicates = ["collection = ?"];
+  const predicates = ["collection = ?", "deleted = 0"];
   if (query.where !== undefined) predicates.push(compilePredicate(query.where, bindings));
 
   const orderBy = query.orderBy

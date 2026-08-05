@@ -1,4 +1,15 @@
-import type { SqliteBinding, StorageCommand, StorageCommandResult } from "./storage.ts";
+import { tickLamportClock } from "./clock.ts";
+import type { LamportClock } from "./clock.ts";
+import { encodeEntity } from "./json.ts";
+import {
+  createClockCommand,
+  createEntityCommand,
+  createOutboxCommand,
+  readStoredRecord,
+  recordKey,
+} from "./records.ts";
+import type { MutationExecution, StoredRecord, UntypedDatabaseChange } from "./records.ts";
+import type { StorageConnection } from "./storage.ts";
 
 export type MutationIntent =
   | Readonly<{
@@ -19,180 +30,194 @@ export type MutationIntent =
       operation: "delete";
     }>;
 
-export type MutationChange = Readonly<{
-  collection: string;
-  id: string;
-  operation: "delete" | "insert" | "update";
-}>;
+type PreparedMutation =
+  | Readonly<{
+      collection: string;
+      encodedData: string;
+      id: string;
+      operation: "insert";
+    }>
+  | Readonly<{
+      collection: string;
+      entries: readonly (readonly [string, string])[];
+      id: string;
+      operation: "patch";
+    }>
+  | Readonly<{
+      collection: string;
+      id: string;
+      operation: "delete";
+    }>;
 
-export type MutationOutcome = Readonly<{
-  change?: MutationChange;
-  value: boolean | undefined;
-}>;
+type PlannedRecord = StoredRecord & Readonly<{ changeId: string }>;
 
-export type CompiledMutation = Readonly<{
-  command: StorageCommand;
-  intent: MutationIntent;
-}>;
-
-export function compileMutation(intent: MutationIntent): CompiledMutation {
+export function prepareMutation(intent: MutationIntent): PreparedMutation {
+  if (intent.collection.length === 0) throw new TypeError("A collection name cannot be empty.");
+  if (intent.id.length === 0) throw new TypeError("An entity ID cannot be empty.");
   switch (intent.operation) {
     case "insert":
-      return {
-        command: {
-          bindings: [intent.collection, intent.id, encodeEntity(intent.data)],
-          kind: "run",
-          sql: `
-            INSERT INTO entities (collection, entity_id, entity)
-            VALUES (?, ?, ?)
-          `,
-        },
-        intent,
-      };
+      return Object.freeze({
+        collection: intent.collection,
+        encodedData: encodeEntity(intent.data),
+        id: intent.id,
+        operation: intent.operation,
+      });
     case "patch": {
-      const entries = Object.entries(intent.changes);
-      if (entries.length === 0) {
-        return {
-          command: {
-            bindings: [intent.collection, intent.id],
-            kind: "query",
-            sql: `
-              SELECT entity_id
-              FROM entities
-              WHERE collection = ? AND entity_id = ?
-            `,
-          },
-          intent,
-        };
+      if (
+        intent.changes === null ||
+        typeof intent.changes !== "object" ||
+        Array.isArray(intent.changes)
+      ) {
+        throw new TypeError("Database patches must be objects.");
       }
-
-      const patch = createJsonSetPatch(entries);
-      return {
-        command: {
-          bindings: [...patch.bindings, intent.collection, intent.id],
-          kind: "run",
-          sql: `
-            UPDATE entities
-            SET entity = ${patch.expression}
-            WHERE collection = ? AND entity_id = ?
-          `,
-        },
-        intent,
-      };
+      return Object.freeze({
+        collection: intent.collection,
+        entries: Object.freeze(
+          Object.entries(intent.changes).map(([key, value]) =>
+            Object.freeze([key, encodeEntity(value)] as const),
+          ),
+        ),
+        id: intent.id,
+        operation: intent.operation,
+      });
     }
     case "delete":
-      return {
-        command: {
-          bindings: [intent.collection, intent.id],
-          kind: "run",
-          sql: `
-            DELETE FROM entities
-            WHERE collection = ? AND entity_id = ?
-          `,
-        },
-        intent,
-      };
+      return Object.freeze({ ...intent });
   }
 }
 
-export function readMutationOutcome(
-  mutation: CompiledMutation,
-  result: StorageCommandResult,
-): MutationOutcome {
-  const { intent } = mutation;
-  switch (intent.operation) {
-    case "insert":
-      assertResultKind(result, "run");
-      return {
-        change: {
-          collection: intent.collection,
-          id: intent.id,
-          operation: "insert",
-        },
-        value: undefined,
-      };
-    case "patch": {
-      if (mutation.command.kind === "query") {
-        assertResultKind(result, "query");
-        return { value: result.rows.length > 0 };
-      }
-
-      assertResultKind(result, "run");
-      return changedOutcome(intent, "update", result.changes);
-    }
-    case "delete": {
-      assertResultKind(result, "run");
-      return changedOutcome(intent, "delete", result.changes);
-    }
+export async function planLocalMutations(
+  connection: StorageConnection,
+  initialClock: LamportClock,
+  mutations: readonly PreparedMutation[],
+): Promise<MutationExecution<readonly (boolean | undefined)[]>> {
+  if (mutations.length === 0) {
+    return { changes: [], commands: [], nextClock: initialClock, value: [] };
   }
-}
 
-function changedOutcome(
-  intent: Pick<MutationIntent, "collection" | "id">,
-  operation: "delete" | "update",
-  changes: number,
-): MutationOutcome {
-  const changed = changes > 0;
-  return {
-    ...(changed
-      ? {
-          change: {
-            collection: intent.collection,
-            id: intent.id,
-            operation,
-          },
+  const loaded = new Map<string, StoredRecord | null>();
+  const changed = new Map<
+    string,
+    Readonly<{ collection: string; id: string; record: PlannedRecord }>
+  >();
+  const changes: UntypedDatabaseChange[] = [];
+  const values: (boolean | undefined)[] = [];
+  let clock = initialClock;
+
+  async function getRecord(collection: string, id: string): Promise<StoredRecord | null> {
+    const key = recordKey(collection, id);
+    if (!loaded.has(key)) loaded.set(key, await readStoredRecord(connection, collection, id));
+    return loaded.get(key) ?? null;
+  }
+
+  function setRecord(collection: string, id: string, record: PlannedRecord): void {
+    const key = recordKey(collection, id);
+    loaded.set(key, record);
+    changed.set(key, { collection, id, record });
+  }
+
+  for (const mutation of mutations) {
+    const existing = await getRecord(mutation.collection, mutation.id);
+    switch (mutation.operation) {
+      case "insert": {
+        if (existing !== null && !existing.deleted) {
+          throw new Error(
+            `Entity "${mutation.id}" already exists in collection "${mutation.collection}".`,
+          );
         }
-      : {}),
-    value: changed,
-  };
-}
-
-function assertResultKind<Kind extends StorageCommandResult["kind"]>(
-  result: StorageCommandResult,
-  kind: Kind,
-): asserts result is Extract<StorageCommandResult, { kind: Kind }> {
-  if (result.kind !== kind) {
-    throw new TypeError(`Storage returned a ${result.kind} result for a ${kind} command.`);
+        const tick = tickLamportClock(clock);
+        clock = tick.clock;
+        setRecord(mutation.collection, mutation.id, {
+          changeId: crypto.randomUUID(),
+          deleted: false,
+          encodedEntity: mutation.encodedData,
+          version: tick.version,
+        });
+        changes.push({
+          collection: mutation.collection,
+          id: mutation.id,
+          operation: "insert",
+        });
+        values.push(undefined);
+        break;
+      }
+      case "patch": {
+        if (mutation.entries.length === 0) {
+          values.push(existing !== null && !existing.deleted);
+          break;
+        }
+        if (existing === null || existing.deleted) {
+          values.push(false);
+          break;
+        }
+        const tick = tickLamportClock(clock);
+        clock = tick.clock;
+        setRecord(mutation.collection, mutation.id, {
+          changeId: crypto.randomUUID(),
+          deleted: false,
+          encodedEntity: applyEncodedPatch(existing.encodedEntity, mutation.entries),
+          version: tick.version,
+        });
+        changes.push({
+          collection: mutation.collection,
+          id: mutation.id,
+          operation: "update",
+        });
+        values.push(true);
+        break;
+      }
+      case "delete": {
+        if (existing === null || existing.deleted) {
+          values.push(false);
+          break;
+        }
+        const tick = tickLamportClock(clock);
+        clock = tick.clock;
+        setRecord(mutation.collection, mutation.id, {
+          changeId: crypto.randomUUID(),
+          deleted: true,
+          encodedEntity: null,
+          version: tick.version,
+        });
+        changes.push({
+          collection: mutation.collection,
+          id: mutation.id,
+          operation: "delete",
+        });
+        values.push(true);
+        break;
+      }
+    }
   }
-}
 
-function encodeEntity(entity: unknown): string {
-  try {
-    if (!isJsonCompatible(entity)) throw new Error();
-    const encoded = JSON.stringify(entity);
-    if (encoded === undefined) throw new Error();
-    return encoded;
-  } catch (cause) {
-    throw new TypeError("Database entities must be JSON-serializable.", { cause });
+  if (changed.size === 0) {
+    return { changes: [], commands: [], nextClock: initialClock, value: values };
   }
+
+  const commands = [...changed.values()].flatMap(({ collection, id, record }) => [
+    createEntityCommand(collection, id, record),
+    createOutboxCommand(collection, id, record.changeId),
+  ]);
+  commands.push(createClockCommand(clock));
+  return { changes, commands, nextClock: clock, value: values };
 }
 
-function createJsonSetPatch(entries: readonly (readonly [string, unknown])[]): Readonly<{
-  bindings: readonly SqliteBinding[];
-  expression: string;
-}> {
-  return {
-    bindings: entries.flatMap(([key, value]) => [key, encodeEntity(value)]),
-    expression: `json_set(
-      entity,
-      ${entries.map(() => "'$.' || json_quote(?), json(?)").join(",\n")}
-    )`,
-  };
-}
-
-function isJsonCompatible(value: unknown, ancestors = new Set<object>()): boolean {
-  if (value === null || typeof value === "boolean" || typeof value === "string") return true;
-  if (typeof value === "number") return Number.isFinite(value);
-  if (typeof value !== "object") return false;
-
-  const isArray = Array.isArray(value);
-  const prototype = Object.getPrototypeOf(value);
-  if (!isArray && prototype !== Object.prototype && prototype !== null) return false;
-  if (ancestors.has(value)) return false;
-
-  ancestors.add(value);
-  const children = isArray ? Array.from(value) : Object.values(value);
-  const compatible = children.every((child) => isJsonCompatible(child, ancestors));
-  ancestors.delete(value);
-  return compatible;
+function applyEncodedPatch(
+  encodedEntity: null | string,
+  entries: readonly (readonly [string, string])[],
+): string {
+  if (encodedEntity === null) throw new TypeError("A live database entity is missing its value.");
+  const entity = JSON.parse(encodedEntity) as unknown;
+  if (entity === null || typeof entity !== "object" || Array.isArray(entity)) {
+    throw new TypeError("Only JSON objects can be patched.");
+  }
+  for (const [key, encodedValue] of entries) {
+    Object.defineProperty(entity, key, {
+      configurable: true,
+      enumerable: true,
+      value: JSON.parse(encodedValue) as unknown,
+      writable: true,
+    });
+  }
+  return encodeEntity(entity);
 }

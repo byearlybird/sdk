@@ -1,14 +1,24 @@
-import { compileMutation, readMutationOutcome } from "./mutation.ts";
-import type { CompiledMutation, MutationIntent } from "./mutation.ts";
+import type { LamportClock } from "./clock.ts";
+import { planLocalMutations, prepareMutation } from "./mutation.ts";
+import type { MutationIntent } from "./mutation.ts";
 import { compileQuery, getQueryBuilder } from "./query.ts";
 import type { QueryBuilder, QueryDefinition } from "./query.ts";
-import type {
-  SqliteRow,
-  StorageAdapter,
-  StorageCommand,
-  StorageCommandResult,
-  StorageConnection,
-} from "./storage.ts";
+import {
+  createAcknowledgeCommand,
+  decodeEntity,
+  initializeDatabase,
+  readPendingChanges,
+  readString,
+} from "./records.ts";
+import type { MutationExecution } from "./records.ts";
+import {
+  normalizeAcknowledgments,
+  normalizePendingLimit,
+  normalizeSyncChanges,
+  planRemoteChanges,
+} from "./sync.ts";
+import type { SyncChange } from "./sync.ts";
+import type { StorageAdapter, StorageConnection } from "./storage.ts";
 
 type BatchMutator<Schema> = Readonly<{
   delete<Collection extends CollectionName<Schema>>(collection: Collection, id: string): void;
@@ -47,6 +57,8 @@ export type DatabaseChange<Schema> = {
 
 export type Database<Schema> = {
   readonly ready: Promise<void>;
+  acknowledgeChanges(changeIds: readonly string[]): Promise<void>;
+  applyRemoteChanges(changes: readonly SyncChange[]): Promise<void>;
   batch(build: (mutation: BatchMutator<Schema>) => void): Promise<void>;
   close(): Promise<void>;
   delete<Collection extends CollectionName<Schema>>(
@@ -60,6 +72,7 @@ export type Database<Schema> = {
   getAll<Collection extends CollectionName<Schema>>(
     collection: Collection,
   ): Promise<DatabaseEntry<Schema[Collection]>[]>;
+  getPendingChanges(limit: number): Promise<SyncChange[]>;
   insert<Collection extends CollectionName<Schema>>(
     collection: Collection,
     id: string,
@@ -82,32 +95,54 @@ export type DatabaseOptions = {
   storage: StorageAdapter;
 };
 
-const createEntitiesTable = `
-  CREATE TABLE IF NOT EXISTS entities (
-    collection TEXT NOT NULL,
-    entity_id TEXT NOT NULL,
-    entity TEXT NOT NULL CHECK (json_valid(entity)),
-    PRIMARY KEY (collection, entity_id)
-  )
-`;
-
 export function createDatabase<Schema>(options: DatabaseOptions): Database<Schema> {
   if (options.name.trim().length === 0) {
     throw new TypeError("The database name cannot be empty.");
   }
 
-  const sqliteReady = openAndInitialize(options.name, options.storage);
-  const ready = sqliteReady.then(() => undefined);
+  const initialized = initializeDatabase(options.name, options.storage);
+  const ready = initialized.then(() => undefined);
   void ready.catch(() => undefined);
   let closed = false;
   let closePromise: Promise<void> | undefined;
+  let currentClock: LamportClock | undefined;
+  let mutationQueue = Promise.resolve();
   const changeListeners = new Set<(change: DatabaseChange<Schema>) => void>();
 
-  async function getOpenSqlite(): Promise<StorageConnection> {
+  async function getReadableConnection(): Promise<StorageConnection> {
     if (closed) throw new Error("The database is closed.");
-    const database = await sqliteReady;
+    await mutationQueue;
+    const { connection } = await initialized;
     if (closed) throw new Error("The database is closed.");
-    return database;
+    return connection;
+  }
+
+  function enqueueMutation<Result>(
+    operation: (
+      connection: StorageConnection,
+      clock: LamportClock,
+    ) => Promise<MutationExecution<Result>>,
+  ): Promise<Result> {
+    if (closed) return Promise.reject(new Error("The database is closed."));
+
+    const result = mutationQueue.then(async () => {
+      const database = await initialized;
+      const clock = currentClock ?? database.clock;
+      const execution = await operation(database.connection, clock);
+      if (execution.commands.length > 0) {
+        await database.connection.executeTransaction(execution.commands);
+        currentClock = execution.nextClock;
+        for (const change of execution.changes) {
+          notifyChange(change as DatabaseChange<Schema>);
+        }
+      }
+      return execution.value;
+    });
+    mutationQueue = result.then(
+      () => undefined,
+      () => undefined,
+    );
+    return result;
   }
 
   async function readEntries<Collection extends CollectionName<Schema>>(
@@ -115,7 +150,7 @@ export function createDatabase<Schema>(options: DatabaseOptions): Database<Schem
     definition: QueryDefinition,
   ): Promise<DatabaseEntry<Schema[Collection]>[]> {
     const compiled = compileQuery(collection, definition);
-    const database = await getOpenSqlite();
+    const database = await getReadableConnection();
     const rows = await database.query(compiled.sql, compiled.bindings);
     return rows.map((row) => ({
       data: decodeEntity<Schema[Collection]>(row),
@@ -136,27 +171,29 @@ export function createDatabase<Schema>(options: DatabaseOptions): Database<Schem
   async function executeMutations(
     intents: readonly MutationIntent[],
   ): Promise<readonly (boolean | undefined)[]> {
-    const mutations = intents.map(compileMutation);
-    const database = await getOpenSqlite();
-    const results = await executeCompiledMutations(database, mutations);
-
-    if (results.length !== mutations.length) {
-      throw new TypeError("Storage returned an invalid number of transaction results.");
-    }
-
-    const outcomes = mutations.map((mutation, index) =>
-      readMutationOutcome(mutation, results[index]),
-    );
-    for (const outcome of outcomes) {
-      if (outcome.change !== undefined) {
-        notifyChange(outcome.change as DatabaseChange<Schema>);
-      }
-    }
-    return outcomes.map(({ value }) => value);
+    const prepared = intents.map(prepareMutation);
+    return enqueueMutation((connection, clock) => planLocalMutations(connection, clock, prepared));
   }
 
   return {
     ready,
+    acknowledgeChanges: async (changeIds) => {
+      const acknowledgments = normalizeAcknowledgments(changeIds);
+      if (acknowledgments.length === 0) return;
+      await enqueueMutation(async (_connection, clock) => ({
+        changes: [],
+        commands: acknowledgments.map(createAcknowledgeCommand),
+        nextClock: clock,
+        value: undefined,
+      }));
+    },
+    applyRemoteChanges: async (changes) => {
+      const normalized = normalizeSyncChanges(changes);
+      if (normalized.length === 0) return;
+      await enqueueMutation((connection, clock) =>
+        planRemoteChanges(connection, clock, normalized),
+      );
+    },
     batch: async (build) => {
       const intents: MutationIntent[] = [];
       let collecting = true;
@@ -178,16 +215,21 @@ export function createDatabase<Schema>(options: DatabaseOptions): Database<Schem
     },
     getAll: (collection) => readEntries(collection, {}),
     get: async (collection, id) => {
-      const database = await getOpenSqlite();
+      const database = await getReadableConnection();
       const [row] = await database.query(
         `
           SELECT entity
           FROM entities
-          WHERE collection = ? AND entity_id = ?
+          WHERE collection = ? AND entity_id = ? AND deleted = 0
         `,
         [collection, id],
       );
       return row === undefined ? null : decodeEntity<Schema[typeof collection]>(row);
+    },
+    getPendingChanges: async (limit) => {
+      const normalizedLimit = normalizePendingLimit(limit);
+      const database = await getReadableConnection();
+      return readPendingChanges(database, normalizedLimit);
     },
     query: async (collection, build) => {
       return readEntries(collection, build(getQueryBuilder<Schema[typeof collection]>()));
@@ -213,8 +255,9 @@ export function createDatabase<Schema>(options: DatabaseOptions): Database<Schem
       closePromise ??= (async () => {
         closed = true;
         changeListeners.clear();
-        const database = await sqliteReady;
-        await database.close();
+        await mutationQueue;
+        const database = await initialized;
+        await database.connection.close();
       })();
       return closePromise;
     },
@@ -251,55 +294,6 @@ function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
     "then" in value &&
     typeof value.then === "function"
   );
-}
-
-async function executeCommand(
-  database: StorageConnection,
-  command: StorageCommand,
-): Promise<StorageCommandResult> {
-  if (command.kind === "query") {
-    const rows = await database.query(command.sql, command.bindings);
-    return { kind: "query", rows };
-  }
-  const result = await database.run(command.sql, command.bindings);
-  return { changes: result.changes, kind: "run" };
-}
-
-async function executeCompiledMutations(
-  database: StorageConnection,
-  mutations: readonly CompiledMutation[],
-): Promise<readonly StorageCommandResult[]> {
-  if (mutations.length === 0) return [];
-  if (mutations.length === 1) {
-    return [await executeCommand(database, mutations[0].command)];
-  }
-  return database.executeTransaction(mutations.map(({ command }) => command));
-}
-
-async function openAndInitialize(
-  name: string,
-  storage: StorageAdapter,
-): Promise<StorageConnection> {
-  const database = await storage.open(name);
-  try {
-    await database.run(createEntitiesTable);
-    return database;
-  } catch (error) {
-    await database.close().catch(() => undefined);
-    throw error;
-  }
-}
-
-function decodeEntity<Entity>(row: SqliteRow): Entity {
-  return JSON.parse(readString(row, "entity")) as Entity;
-}
-
-function readString(row: SqliteRow, column: string): string {
-  const value = row[column];
-  if (typeof value !== "string") {
-    throw new TypeError(`SQLite returned an invalid "${column}" value.`);
-  }
-  return value;
 }
 
 function reportListenerError(error: unknown): void {

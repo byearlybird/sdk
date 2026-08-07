@@ -50,9 +50,11 @@ export function createQuery<Schema, Result>(
   let queue = initialRun.then(
     (value) => {
       snapshot = success(value);
+      publish();
     },
     (error: unknown) => {
       snapshot = failure(error);
+      publish();
     },
   );
   let scheduledRun: ScheduledRun<Result> | undefined;

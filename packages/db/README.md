@@ -57,66 +57,35 @@ wins. Acknowledgments match the current change ID, so acknowledging an in-flight
 change cannot clear a newer local mutation for the same entity.
 
 Use `createSynchronizer` to orchestrate paginated pulling, checkpoint persistence,
-and outbox pushing with a transport-independent adapter:
+and outbox pushing with an application-provided transport:
 
 ```ts
-import { createSynchronizer } from "@byearlybird/db";
+import { createSynchronizer, type SyncTransport } from "@byearlybird/db";
 
-const synchronizer = createSynchronizer(database, {
-  transport: {
-    pull: async ({ cursor, limit }) => {
-      // Return changes after the opaque cursor and a durable next cursor.
-      return relay.pull({ cursor, limit });
-    },
-    push: async ({ changes }) => {
-      // Resolve only after every change has been durably accepted.
-      await relay.push(changes);
-    },
+const transport: SyncTransport = {
+  pull: async ({ cursor, limit }) => {
+    // Return changes after the opaque cursor and a durable next cursor.
+    return relay.pull({ cursor, limit });
   },
-});
+  push: async ({ changes }) => {
+    // Resolve only after every change has been durably accepted.
+    await relay.push(changes);
+  },
+};
 
+const synchronizer = createSynchronizer(database, { transport });
 await synchronizer.sync();
 ```
 
 Pull pages are committed atomically with their opaque checkpoints. Pushes are
 repeat-safe when the transport deduplicates by `changeId`, so a lost response leaves
 the local outbox intact for retry. Synchronization pulls before it pushes, and
-concurrent calls on one synchronizer share the same run. A database supports one
-synchronization upstream for its lifetime.
+concurrent calls on one synchronizer share the same run. Use only one synchronization
+upstream for a database's lifetime.
 
-Connect to an HTTP sync server with a transport that acquires a fresh bearer token
-before every request:
-
-```ts
-import { createHttpSyncTransport } from "@byearlybird/db/http";
-
-const httpTransport = createHttpSyncTransport({
-  serverUrl: "https://sync.example.com",
-  getToken: () => auth.getToken(),
-});
-
-const httpSynchronizer = createSynchronizer(database, { transport: httpTransport });
-```
-
-The HTTP transport does not schedule or retry synchronization. Failed HTTP responses
-throw `HttpSyncResponseError`, which exposes the response status and any `Retry-After`
-header.
-
-For local tests, share one in-memory transport between the databases that should
-synchronize:
-
-```ts
-import { createInMemorySyncTransport, createSynchronizer } from "@byearlybird/db";
-
-const transport = createInMemorySyncTransport();
-const firstSync = createSynchronizer(firstDatabase, { transport });
-const secondSync = createSynchronizer(secondDatabase, { transport });
-
-await firstSync.sync();
-await secondSync.sync();
-```
-
-The transport is process-local and append-only. Create a new transport for each isolated test.
+The synchronizer does not schedule, retry, time out, cancel, or back off. Applications
+must provide those policies around `sync()` and must make transport pushes idempotent
+by `changeId`.
 
 Install `@capacitor-community/sqlite` and `@capacitor/core` when using the Capacitor
 adapter. Install `@sqlite.org/sqlite-wasm` when using the OPFS adapter exported from

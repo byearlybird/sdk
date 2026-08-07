@@ -21,7 +21,6 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./capacitor": "./dist/capacitor.mjs",
-    "./http": "./dist/http.mjs",
     "./opfs": "./dist/opfs.mjs",
     "./package.json": "./package.json"
   },
@@ -33,7 +32,7 @@
     "dev": "vp pack --watch",
     "test": "vp test",
     "check": "vp check",
-    "prepublishOnly": "vp run build"
+    "prepublishOnly": "vp run check && vp run test && vp run build"
   },
   "devDependencies": {
     "@capacitor-community/sqlite": "^8.1.0",

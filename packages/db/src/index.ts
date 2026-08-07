@@ -8,7 +8,6 @@ export type {
   DatabaseOptions,
   DatabasePatch,
 } from "./database.ts";
-export { createInMemorySyncTransport } from "./in-memory-sync-transport.ts";
 export { createQuery } from "./live-query.ts";
 export type { DatabaseQuery, DatabaseQuerySnapshot, QueryDatabase } from "./live-query.ts";
 export type {

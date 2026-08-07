@@ -17,6 +17,43 @@ afterEach(() => {
 });
 
 describe("createQuery", () => {
+  it("notifies subscribers when the initial load settles", async () => {
+    const fixture = createDatabaseFixture();
+    const initialLoad = deferred<void>();
+    const query = createQuery(fixture.database, async (database) => {
+      await database.getAll("tasks");
+      await initialLoad.promise;
+      return "loaded";
+    });
+    const listener = vi.fn();
+    const unsubscribe = query.subscribe(listener);
+
+    initialLoad.resolve();
+
+    await vi.waitFor(() => expect(listener).toHaveBeenCalledOnce());
+    expect(query.getSnapshot()).toEqual({ status: "success", value: "loaded" });
+    unsubscribe();
+  });
+
+  it("notifies subscribers when the initial load fails", async () => {
+    const fixture = createDatabaseFixture();
+    const initialLoad = deferred<void>();
+    const failure = new Error("Initial load failed.");
+    const query = createQuery(fixture.database, async (database) => {
+      await database.getAll("tasks");
+      await initialLoad.promise;
+      throw failure;
+    });
+    const listener = vi.fn();
+    const unsubscribe = query.subscribe(listener);
+
+    initialLoad.resolve();
+
+    await vi.waitFor(() => expect(listener).toHaveBeenCalledOnce());
+    expect(query.getSnapshot()).toEqual({ error: failure, status: "error" });
+    unsubscribe();
+  });
+
   it("loads immediately and reruns only for automatically tracked collections", async () => {
     const fixture = createDatabaseFixture();
     fixture.set("tasks", [{ data: { title: "First" }, id: "task-1" }]);
@@ -55,6 +92,8 @@ describe("createQuery", () => {
     const listener = vi.fn();
     const unsubscribe = query.subscribe(listener);
     await readQuery(query);
+    await vi.waitFor(() => expect(listener).toHaveBeenCalledOnce());
+    listener.mockClear();
 
     includeProjects = false;
     fixture.emit({ collection: "projects", id: "project-1", operation: "insert" });

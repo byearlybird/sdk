@@ -1,0 +1,24 @@
+{
+  "name": "demo-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc --noEmit",
+    "start": "tsx src/index.ts",
+    "test": "vp test"
+  },
+  "dependencies": {
+    "@byearlybird/db": "workspace:*",
+    "@hono/node-server": "2.1.0",
+    "hono": "4.13.0",
+    "unstorage": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "4.23.0",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}

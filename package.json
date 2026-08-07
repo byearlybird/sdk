@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "ready": "vp check && vp run -r test && vp run -r build",
-    "dev": "vp run demo-client#dev",
-    "demo": "vp run demo-client#dev",
+    "dev": "vp run --parallel --filter demo-client --filter demo-server dev",
+    "demo": "vp run --parallel --filter demo-client --filter demo-server dev",
     "demo:build": "vp run demo-client#build",
+    "demo:server": "vp run demo-server#dev",
     "demo:preview": "vp run demo-client#preview",
     "prepare": "vp config"
   },

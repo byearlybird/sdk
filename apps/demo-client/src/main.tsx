@@ -2,6 +2,7 @@ import { StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { database, DatabaseProvider } from "./database";
+import { startDemoSync } from "./sync";
 import "./style.css";
 
 const root = document.querySelector<HTMLDivElement>("#root");
@@ -9,6 +10,8 @@ const root = document.querySelector<HTMLDivElement>("#root");
 if (!root) {
   throw new Error("Root element not found");
 }
+
+startDemoSync();
 
 createRoot(root).render(
   <StrictMode>

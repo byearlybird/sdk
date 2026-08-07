@@ -9,6 +9,7 @@ A TypeScript monorepo for Early Bird's shared schemas, components, and database 
 - `@byearlybird/db` — DB by Early Bird, a typed reactive database built on SQLite
 - `@byearlybird/db-react` — React providers and query hooks for DB by Early Bird
 - `apps/demo-client` — a private React SPA for trying the packages
+- `apps/demo-server` — a local Hono relay for demonstrating browser-to-browser database sync
 
 ## Development
 
@@ -36,8 +37,12 @@ vp run -r test
 vp run -r build
 ```
 
-- Run the development server:
+- Run the demo client and local sync relay:
 
 ```bash
 vp run dev
 ```
+
+Open the client URL in two different browsers. Both clients poll the shared local relay and should
+converge within about five seconds. The relay is intentionally unauthenticated and persists one
+shared change log locally with unstorage.

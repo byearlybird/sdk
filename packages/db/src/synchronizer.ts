@@ -1,29 +1,7 @@
+import type { SyncPullPage, SyncTransport } from "@byearlybird/sync";
 import type { Database } from "./database.ts";
-import type { SyncChange } from "./sync.ts";
 
 const defaultBatchLimit = 100;
-
-export type SyncPullRequest = Readonly<{
-  cursor: string | null;
-  limit: number;
-}>;
-
-export type SyncPullPage = Readonly<{
-  changes: readonly SyncChange[];
-  cursor: string;
-  hasMore: boolean;
-}>;
-
-export type SyncPushRequest = Readonly<{
-  changes: readonly SyncChange[];
-}>;
-
-export type SyncTransport = Readonly<{
-  /** Returns the next durable page after an opaque cursor. */
-  pull(request: SyncPullRequest): Promise<SyncPullPage>;
-  /** Resolves only after every change is durably accepted. Retries must be idempotent by change ID. */
-  push(request: SyncPushRequest): Promise<void>;
-}>;
 
 export type Synchronizer = Readonly<{
   /** Pulls all available remote pages, then drains the local outbox. */

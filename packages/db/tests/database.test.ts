@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, expectTypeOf, it, vi } from "vite-plus/test";
+import type { SyncChange } from "@byearlybird/sync";
 import { createDatabase } from "../src/database.ts";
 import type { Database, DatabaseChange, DatabaseEntry, DatabasePatch } from "../src/database.ts";
-import type { SyncChange } from "../src/sync.ts";
 import { createNodeStorageAdapter } from "./node-storage.ts";
 
 type TestSchema = {

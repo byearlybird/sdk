@@ -1,6 +1,6 @@
-import { assertVersion, compareVersions, observeVersion } from "./clock.ts";
-import type { LamportClock, Version } from "./clock.ts";
-import { encodeEntity, equalJson } from "./json.ts";
+import { compareVersions, observeVersion, validateSyncChanges } from "@byearlybird/sync";
+import type { LamportClock, SyncChange, Version } from "@byearlybird/sync";
+import { equalJson } from "./json.ts";
 import {
   createClearOutboxCommand,
   createClockCommand,
@@ -10,25 +10,6 @@ import {
 } from "./records.ts";
 import type { MutationExecution, StoredRecord, UntypedDatabaseChange } from "./records.ts";
 import type { StorageConnection } from "./storage.ts";
-
-export type SyncChange =
-  | Readonly<{
-      changeId: string;
-      collection: string;
-      deleted: false;
-      entity: unknown;
-      entityId: string;
-      format: 1;
-      version: Version;
-    }>
-  | Readonly<{
-      changeId: string;
-      collection: string;
-      deleted: true;
-      entityId: string;
-      format: 1;
-      version: Version;
-    }>;
 
 type NormalizedSyncChange = Readonly<{
   changeId: string;
@@ -40,34 +21,9 @@ type NormalizedSyncChange = Readonly<{
 }>;
 
 export function normalizeSyncChanges(changes: readonly SyncChange[]): NormalizedSyncChange[] {
-  if (!Array.isArray(changes)) throw new TypeError("Remote sync changes must be an array.");
-
-  const changeIds = new Set<string>();
-  return changes.map((change) => {
-    if (change === null || typeof change !== "object" || Array.isArray(change)) {
-      throw new TypeError("A remote sync change must be an object.");
-    }
-    if (change.format !== 1) throw new TypeError("A remote sync change has an unsupported format.");
-    assertNonemptyString(change.changeId, "change ID");
-    assertNonemptyString(change.collection, "collection");
-    assertNonemptyString(change.entityId, "entity ID");
-    if (changeIds.has(change.changeId)) {
-      throw new TypeError(`Remote sync change ID "${change.changeId}" is duplicated.`);
-    }
-    changeIds.add(change.changeId);
-    assertVersion(change.version);
-    if (typeof change.deleted !== "boolean") {
-      throw new TypeError("A remote sync change deleted flag must be boolean.");
-    }
-    const hasEntity = Object.prototype.hasOwnProperty.call(change, "entity");
-    if (change.deleted && hasEntity) {
-      throw new TypeError("A remote sync tombstone cannot contain an entity.");
-    }
-    if (!change.deleted && !hasEntity) {
-      throw new TypeError("A remote live sync change must contain an entity.");
-    }
-
-    const encodedEntity = change.deleted ? null : encodeEntity(change.entity);
+  return validateSyncChanges(changes).map((change) => {
+    // validateSyncChanges already proved every live entity encodes, so this cannot fail.
+    const encodedEntity = change.deleted ? null : JSON.stringify(change.entity);
     return {
       changeId: change.changeId,
       collection: change.collection,

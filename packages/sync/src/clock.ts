@@ -47,18 +47,19 @@ export function tickLamportClock(clock: LamportClock): ClockTick {
   };
 }
 
-export function assertVersion(version: Version): void {
+export function assertVersion(version: unknown): asserts version is Version {
   if (version === null || typeof version !== "object" || Array.isArray(version)) {
     throw new TypeError("A sync version must be an object.");
   }
-  assertCounter(version.counter);
-  if (typeof version.replicaId !== "string" || version.replicaId.length === 0) {
+  const candidate = version as Partial<Version>;
+  assertCounter(candidate.counter);
+  if (typeof candidate.replicaId !== "string" || candidate.replicaId.length === 0) {
     throw new TypeError("A sync version replica ID must be a nonempty string.");
   }
 }
 
-function assertCounter(counter: number): void {
-  if (!Number.isSafeInteger(counter) || counter < 0) {
+function assertCounter(counter: unknown): asserts counter is number {
+  if (typeof counter !== "number" || !Number.isSafeInteger(counter) || counter < 0) {
     throw new TypeError("A Lamport clock counter must be a nonnegative safe integer.");
   }
 }

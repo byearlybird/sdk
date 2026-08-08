@@ -1,42 +1,53 @@
-import type { SyncChange, SyncPushRequest } from "@byearlybird/db";
+import { validateSyncChange } from "@byearlybird/sync";
+import type { SyncChange } from "@byearlybird/sync";
+import {
+  createLatestSyncState,
+  mergeServerChanges,
+  pullLatestSyncRecords,
+  restoreLatestSyncState,
+} from "@byearlybird/sync/server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { Storage } from "unstorage";
 
-const changesKey = "changes";
+const stateKey = "sync-state";
 
-export async function createApp(storage: Storage<SyncChange[]>): Promise<Hono> {
+export async function createApp(storage: Storage<object>): Promise<Hono> {
   const app = new Hono();
-  const changes = (await storage.getItem(changesKey)) ?? [];
-  const changeIds = new Set(changes.map(({ changeId }) => changeId));
+  const stored = await storage.getItem(stateKey);
+  let state =
+    stored === null
+      ? createLatestSyncState<SyncChange>()
+      : restoreLatestSyncState(stored, validateSyncChange);
   let pushQueue = Promise.resolve();
 
   app.use("*", cors());
 
-  app.get("/sync/pull", (context) => {
-    const start = Number(context.req.query("cursor") ?? 0);
-    const limit = Number(context.req.query("limit") ?? 100);
-    const end = Math.min(start + limit, changes.length);
-    return context.json({
-      changes: changes.slice(start, end),
-      cursor: String(end),
-      hasMore: end < changes.length,
+  // Every validation helper here throws, so bad requests must not read as server faults.
+  app.onError((error, context) =>
+    error instanceof TypeError || error instanceof RangeError || error instanceof SyntaxError
+      ? context.json({ error: error.message }, 400)
+      : context.json({ error: "Internal Server Error" }, 500),
+  );
+
+  // Routing guarantees a nonempty app domain, so the handlers never have to check for one.
+  app.get("/api/v1/apps/:appDomain/sync/pull", (context) => {
+    const page = pullLatestSyncRecords(state, {
+      appDomain: context.req.param("appDomain"),
+      cursor: context.req.query("cursor") ?? null,
+      limit: Number(context.req.query("limit") ?? 100),
     });
+    return context.json(page);
   });
 
-  app.post("/sync/push", async (context) => {
-    const body = await context.req.json<SyncPushRequest>();
+  app.post("/api/v1/apps/:appDomain/sync/push", async (context) => {
+    const appDomain = context.req.param("appDomain");
+    const changes = validatePushBody(await context.req.json<unknown>());
     const push = pushQueue.then(async () => {
-      const newChangeIds = new Set<string>();
-      const additions = body.changes.filter(({ changeId }) => {
-        if (changeIds.has(changeId) || newChangeIds.has(changeId)) return false;
-        newChangeIds.add(changeId);
-        return true;
-      });
-      if (additions.length === 0) return;
-      await storage.setItem(changesKey, [...changes, ...additions]);
-      changes.push(...additions);
-      for (const { changeId } of additions) changeIds.add(changeId);
+      const nextState = mergeServerChanges(state, appDomain, changes);
+      if (nextState === state) return;
+      await storage.setItem(stateKey, nextState);
+      state = nextState;
     });
     pushQueue = push.catch(() => undefined);
     await push;
@@ -44,4 +55,15 @@ export async function createApp(storage: Storage<SyncChange[]>): Promise<Hono> {
   });
 
   return app;
+}
+
+function validatePushBody(value: unknown): readonly SyncChange[] {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new TypeError("A sync push body must be an object.");
+  }
+  const { changes } = value as Record<string, unknown>;
+  if (!Array.isArray(changes)) {
+    throw new TypeError("A sync push body must contain a changes array.");
+  }
+  return changes.map(validateSyncChange);
 }

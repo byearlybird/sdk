@@ -19,16 +19,16 @@ export type {
   QueryPredicate,
   QueryScalar,
 } from "./query.ts";
-export type { SyncChange } from "./sync.ts";
-export { createSynchronizer } from "./synchronizer.ts";
 export type {
+  SyncChange,
   SyncPullPage,
   SyncPullRequest,
   SyncPushRequest,
   SyncTransport,
-  Synchronizer,
-  SynchronizerOptions,
-} from "./synchronizer.ts";
+  Version,
+} from "@byearlybird/sync";
+export { createSynchronizer } from "./synchronizer.ts";
+export type { Synchronizer, SynchronizerOptions } from "./synchronizer.ts";
 export type {
   SqliteBinding,
   SqliteRow,
@@ -38,4 +38,3 @@ export type {
   StorageConnection,
   StorageRunResult,
 } from "./storage.ts";
-export type { Version } from "./clock.ts";

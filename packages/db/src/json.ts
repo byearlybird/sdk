@@ -1,15 +1,7 @@
-const notSerializable = "Database entities must be JSON-serializable.";
+import { encodeJson } from "@byearlybird/sync";
 
 export function encodeEntity(entity: unknown): string {
-  let encoded: string | undefined;
-  try {
-    if (isJsonCompatible(entity)) encoded = JSON.stringify(entity);
-  } catch (cause) {
-    // Accessor properties can throw while being inspected or serialized.
-    throw new TypeError(notSerializable, { cause });
-  }
-  if (encoded === undefined) throw new TypeError(notSerializable);
-  return encoded;
+  return encodeJson(entity, "database entity");
 }
 
 export function equalJson(left: unknown, right: unknown): boolean {
@@ -37,21 +29,4 @@ export function equalJson(left: unknown, right: unknown): boolean {
         equalJson(leftRecord[key], rightRecord[key]),
     )
   );
-}
-
-function isJsonCompatible(value: unknown, ancestors = new Set<object>()): boolean {
-  if (value === null || typeof value === "boolean" || typeof value === "string") return true;
-  if (typeof value === "number") return Number.isFinite(value);
-  if (typeof value !== "object") return false;
-
-  const isArray = Array.isArray(value);
-  const prototype = Object.getPrototypeOf(value);
-  if (!isArray && prototype !== Object.prototype && prototype !== null) return false;
-  if (ancestors.has(value)) return false;
-
-  ancestors.add(value);
-  const children = isArray ? Array.from(value) : Object.values(value);
-  const compatible = children.every((child) => isJsonCompatible(child, ancestors));
-  ancestors.delete(value);
-  return compatible;
 }

@@ -1,19 +1,21 @@
 import { createSynchronizer } from "@byearlybird/db";
-import type { SyncPullPage, SyncTransport } from "@byearlybird/db";
+import type { SyncPullPage, SyncTransport } from "@byearlybird/sync";
 import { database } from "./database";
 
 const relayUrl = "http://localhost:3001";
+const appDomain = "com.byearlybird.demo";
+const syncPath = `/api/v1/apps/${encodeURIComponent(appDomain)}/sync`;
 
 const transport: SyncTransport = {
   pull: async ({ cursor, limit }) => {
-    const url = new URL("/sync/pull", relayUrl);
+    const url = new URL(`${syncPath}/pull`, relayUrl);
     url.searchParams.set("limit", String(limit));
     if (cursor !== null) url.searchParams.set("cursor", cursor);
     const response = await request(url);
     return response.json() as Promise<SyncPullPage>;
   },
   push: async ({ changes }) => {
-    await request(new URL("/sync/push", relayUrl), {
+    await request(new URL(`${syncPath}/push`, relayUrl), {
       body: JSON.stringify({ changes }),
       headers: { "content-type": "application/json" },
       method: "POST",

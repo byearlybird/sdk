@@ -1,18 +1,18 @@
 import { afterEach, describe, expect, expectTypeOf, it } from "vite-plus/test";
+import type {
+  SyncChange,
+  SyncPullPage,
+  SyncPullRequest,
+  SyncPushRequest,
+  SyncTransport,
+} from "@byearlybird/sync";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createDatabase } from "../src/database.ts";
 import type { Database } from "../src/database.ts";
 import { createSynchronizer } from "../src/synchronizer.ts";
-import type {
-  SyncPullPage,
-  SyncPullRequest,
-  SyncPushRequest,
-  SyncTransport,
-  Synchronizer,
-} from "../src/synchronizer.ts";
-import type { SyncChange } from "../src/sync.ts";
+import type { Synchronizer } from "../src/synchronizer.ts";
 import type { StorageAdapter } from "../src/storage.ts";
 import { createNodeStorageAdapter } from "./node-storage.ts";
 

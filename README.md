@@ -1,9 +1,9 @@
 # SDK by Early Bird
 
-Building blocks for local-first TypeScript apps: a reactive SQLite database that syncs, its React
-bindings, a tiny schema validator, and a React component library.
+Building blocks for local-first TypeScript apps: a reactive SQLite database, shared sync rules, its
+React bindings, a tiny schema validator, and a React component library.
 
-Each package stands alone, so take one or take all four. They just happen to fit together nicely.
+Each package has a focused job, and they fit together without making optional features mandatory.
 
 > [!NOTE]
 > **Status: Beta.** The public APIs are mostly settled, but I'm not calling them done yet. Breaking
@@ -11,6 +11,18 @@ Each package stands alone, so take one or take all four. They just happen to fit
 > them quietly.
 
 ## Packages
+
+### [@byearlybird/sync](packages/sync) — shared sync rules and server helpers
+
+Lamport clocks, entity snapshots, permanent tombstones, transport types, optional end-to-end
+encryption, and storage-neutral helpers for a latest-state sync server.
+
+```ts
+const result = mergeServerChange(state, "com.example.tasks", incomingChange);
+state = result.state;
+```
+
+[**Read more →**](packages/sync)
 
 ### [@byearlybird/db](packages/db) — a typed, reactive database on SQLite
 
@@ -73,7 +85,7 @@ custom properties. Override the tokens you care about and the whole set follows.
 
 ## Demos
 
-- [`apps/demo-client`](apps/demo-client) — a React SPA that uses all four packages together
+- [`apps/demo-client`](apps/demo-client) — a React SPA that uses the packages together
 - [`apps/demo-server`](apps/demo-server) — a local Hono relay that syncs two browsers over HTTP
 
 Run both from the repository root:

@@ -1,12 +1,11 @@
 import { serve } from "@hono/node-server";
-import type { SyncChange } from "@byearlybird/db";
 import { fileURLToPath } from "node:url";
 import { createStorage } from "unstorage";
 import fsLiteDriver from "unstorage/drivers/fs-lite";
 import { createApp } from "./app.js";
 
 const port = 3001;
-const storage = createStorage<SyncChange[]>({
+const storage = createStorage<object>({
   driver: fsLiteDriver({ base: fileURLToPath(new URL("../data", import.meta.url)) }),
 });
 const app = await createApp(storage);

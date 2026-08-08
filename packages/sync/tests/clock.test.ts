@@ -20,7 +20,7 @@ describe("Lamport clock", () => {
     });
   });
 
-  it("orders by counter and then replica ID", () => {
+  it("orders versions by counter and then replica ID", () => {
     expect(
       compareVersions(
         { counter: 2, replicaId: "replica-a" },

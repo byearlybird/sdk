@@ -1,5 +1,5 @@
-import { tickLamportClock } from "./clock.ts";
-import type { LamportClock } from "./clock.ts";
+import { tickLamportClock } from "@byearlybird/sync";
+import type { LamportClock } from "@byearlybird/sync";
 import type { IdGenerator } from "./id.ts";
 import { encodeEntity } from "./json.ts";
 import {

@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { compareVersions } from "../src/clock.ts";
+import { compareVersions } from "@byearlybird/sync";
+import type { SyncChange } from "@byearlybird/sync";
 import { createDatabase } from "../src/database.ts";
 import type { Database, DatabaseChange } from "../src/database.ts";
 import {
@@ -10,7 +11,6 @@ import {
   normalizePendingLimit,
   normalizeSyncChanges,
 } from "../src/sync.ts";
-import type { SyncChange } from "../src/sync.ts";
 import type { StorageAdapter } from "../src/storage.ts";
 import { createNodeStorageAdapter } from "./node-storage.ts";
 

@@ -1,4 +1,4 @@
-import type { LamportClock } from "./clock.ts";
+import type { LamportClock, SyncChange } from "@byearlybird/sync";
 import { generateId } from "./id.ts";
 import type { IdGenerator } from "./id.ts";
 import { notifyListeners } from "./listeners.ts";
@@ -23,7 +23,6 @@ import {
   normalizeSyncChanges,
   planRemoteChanges,
 } from "./sync.ts";
-import type { SyncChange } from "./sync.ts";
 import type { StorageAdapter, StorageConnection } from "./storage.ts";
 
 type BatchMutator<Schema> = Readonly<{

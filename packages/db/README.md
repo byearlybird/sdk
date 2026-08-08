@@ -163,13 +163,19 @@ Applying changes is repeat-safe, and it still observes remote clocks even when t
 wins. Acknowledgments match the current change ID, so acknowledging an in-flight change can't clear
 a newer local mutation for the same entity.
 
+The shared change, clock, and transport types come from
+[`@byearlybird/sync`](../sync). DB re-exports the existing types, so imports from `@byearlybird/db`
+keep working. DB itself uses plaintext changes and does not require or enable encryption. An app can
+choose to encrypt changes at its transport boundary with `@byearlybird/sync/crypto`.
+
 ### The synchronizer
 
 `createSynchronizer` handles the paginated pulling, checkpoint persistence, and outbox pushing for
 you. You bring the transport:
 
 ```ts
-import { createSynchronizer, type SyncTransport } from "@byearlybird/db";
+import { createSynchronizer } from "@byearlybird/db";
+import type { SyncTransport } from "@byearlybird/sync";
 
 const transport: SyncTransport = {
   pull: async ({ cursor, limit }) => {
@@ -189,8 +195,8 @@ await synchronizer.sync();
 A few details worth knowing:
 
 - Pull pages commit atomically with their opaque checkpoints.
-- Pushes are repeat-safe as long as the transport dedupes by `changeId`, so a lost response leaves
-  the local outbox intact for a retry.
+- Pushes are repeat-safe when the server treats the same `changeId` and version as a retry, so a lost
+  response leaves the local outbox intact for another attempt.
 - Syncing pulls before it pushes, and concurrent calls on one synchronizer share the same run.
 - So, stick to one sync upstream for a database's lifetime.
 

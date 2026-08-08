@@ -1,7 +1,6 @@
-import { createLamportClock } from "./clock.ts";
-import type { LamportClock, Version } from "./clock.ts";
+import { createLamportClock } from "@byearlybird/sync";
+import type { LamportClock, SyncChange, Version } from "@byearlybird/sync";
 import type { IdGenerator } from "./id.ts";
-import type { SyncChange } from "./sync.ts";
 import type { SqliteRow, StorageAdapter, StorageCommand, StorageConnection } from "./storage.ts";
 
 export type StoredRecord = Readonly<{

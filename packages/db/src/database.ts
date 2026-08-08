@@ -1,4 +1,6 @@
 import type { LamportClock } from "./clock.ts";
+import { generateId } from "./id.ts";
+import type { IdGenerator } from "./id.ts";
 import { notifyListeners } from "./listeners.ts";
 import { planLocalMutations, prepareMutation } from "./mutation.ts";
 import type { MutationIntent } from "./mutation.ts";
@@ -103,6 +105,7 @@ export type ApplyRemoteChangesOptions = Readonly<{
 }>;
 
 export type DatabaseOptions = {
+  idGenerator?: IdGenerator;
   name: string;
   storage: StorageAdapter;
 };
@@ -112,7 +115,8 @@ export function createDatabase<Schema>(options: DatabaseOptions): Database<Schem
     throw new TypeError("The database name cannot be empty.");
   }
 
-  const initialized = initializeDatabase(options.name, options.storage);
+  const idGenerator = options.idGenerator ?? generateId;
+  const initialized = initializeDatabase(options.name, options.storage, idGenerator);
   const ready = initialized.then(() => undefined);
   void ready.catch(() => undefined);
   let closed = false;
@@ -180,7 +184,9 @@ export function createDatabase<Schema>(options: DatabaseOptions): Database<Schem
     intents: readonly MutationIntent[],
   ): Promise<readonly (boolean | undefined)[]> {
     const prepared = intents.map(prepareMutation);
-    return enqueueMutation((connection, clock) => planLocalMutations(connection, clock, prepared));
+    return enqueueMutation((connection, clock) =>
+      planLocalMutations(connection, clock, prepared, idGenerator),
+    );
   }
 
   return {

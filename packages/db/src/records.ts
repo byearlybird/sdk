@@ -1,5 +1,6 @@
 import { createLamportClock } from "./clock.ts";
 import type { LamportClock, Version } from "./clock.ts";
+import type { IdGenerator } from "./id.ts";
 import type { SyncChange } from "./sync.ts";
 import type { SqliteRow, StorageAdapter, StorageCommand, StorageConnection } from "./storage.ts";
 
@@ -100,6 +101,7 @@ const updateClockSql = `
 export async function initializeDatabase(
   name: string,
   storage: StorageAdapter,
+  idGenerator: IdGenerator,
 ): Promise<InitializedDatabase> {
   const connection = await storage.open(name);
   try {
@@ -109,7 +111,7 @@ export async function initializeDatabase(
     await connection.run(createSyncCheckpointTable);
     await connection.run(
       "INSERT OR IGNORE INTO sync_state (id, counter, replica_id) VALUES (1, 0, ?)",
-      [crypto.randomUUID()],
+      [idGenerator()],
     );
     const [row] = await connection.query("SELECT counter, replica_id FROM sync_state WHERE id = 1");
     if (row === undefined) throw new TypeError("SQLite did not initialize synchronization state.");

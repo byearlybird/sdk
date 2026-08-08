@@ -8,6 +8,8 @@ export type {
   DatabaseOptions,
   DatabasePatch,
 } from "./database.ts";
+export { generateId } from "./id.ts";
+export type { IdGenerator } from "./id.ts";
 export { createQuery } from "./live-query.ts";
 export type { DatabaseQuery, DatabaseQuerySnapshot, QueryDatabase } from "./live-query.ts";
 export type {

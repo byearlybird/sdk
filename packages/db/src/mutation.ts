@@ -1,5 +1,6 @@
 import { tickLamportClock } from "./clock.ts";
 import type { LamportClock } from "./clock.ts";
+import type { IdGenerator } from "./id.ts";
 import { encodeEntity } from "./json.ts";
 import {
   createClockCommand,
@@ -88,6 +89,7 @@ export async function planLocalMutations(
   connection: StorageConnection,
   initialClock: LamportClock,
   mutations: readonly PreparedMutation[],
+  idGenerator: IdGenerator,
 ): Promise<MutationExecution<readonly (boolean | undefined)[]>> {
   if (mutations.length === 0) {
     return { changes: [], commands: [], nextClock: initialClock, value: [] };
@@ -126,7 +128,7 @@ export async function planLocalMutations(
         const tick = tickLamportClock(clock);
         clock = tick.clock;
         setRecord(mutation.collection, mutation.id, {
-          changeId: crypto.randomUUID(),
+          changeId: idGenerator(),
           deleted: false,
           encodedEntity: mutation.encodedData,
           version: tick.version,
@@ -151,7 +153,7 @@ export async function planLocalMutations(
         const tick = tickLamportClock(clock);
         clock = tick.clock;
         setRecord(mutation.collection, mutation.id, {
-          changeId: crypto.randomUUID(),
+          changeId: idGenerator(),
           deleted: false,
           encodedEntity: applyEncodedPatch(existing.encodedEntity, mutation.entries),
           version: tick.version,
@@ -172,7 +174,7 @@ export async function planLocalMutations(
         const tick = tickLamportClock(clock);
         clock = tick.clock;
         setRecord(mutation.collection, mutation.id, {
-          changeId: crypto.randomUUID(),
+          changeId: idGenerator(),
           deleted: true,
           encodedEntity: null,
           version: tick.version,

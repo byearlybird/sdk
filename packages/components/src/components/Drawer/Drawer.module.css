@@ -24,7 +24,6 @@
   position: absolute;
   box-sizing: border-box;
   overflow: hidden;
-  border: var(--eb-border-width) solid var(--eb-color-border);
   border-radius: var(--eb-radius-surface);
   outline: 0;
   color: var(--eb-color-text);
@@ -44,6 +43,7 @@
   left: 0;
   width: 100%;
   max-height: calc(100dvh - var(--eb-size-4));
+  border-top: var(--eb-border-width) solid var(--eb-color-border);
   transform: translateY(
     calc(var(--drawer-snap-point-offset, 0px) + var(--drawer-swipe-movement-y, 0px))
   );
@@ -55,6 +55,7 @@
   left: 0;
   width: 100%;
   max-height: calc(100dvh - var(--eb-size-4));
+  border-bottom: var(--eb-border-width) solid var(--eb-color-border);
   transform: translateY(var(--drawer-swipe-movement-y, 0px));
 }
 
@@ -64,6 +65,7 @@
   bottom: 0;
   width: calc(100% - (var(--eb-size-4) * 2));
   max-width: calc(var(--eb-size-10) * 10);
+  border-left: var(--eb-border-width) solid var(--eb-color-border);
   transform: translateX(var(--drawer-swipe-movement-x, 0px));
 }
 
@@ -73,6 +75,7 @@
   left: 0;
   width: calc(100% - (var(--eb-size-4) * 2));
   max-width: calc(var(--eb-size-10) * 10);
+  border-right: var(--eb-border-width) solid var(--eb-color-border);
   transform: translateX(var(--drawer-swipe-movement-x, 0px));
 }
 

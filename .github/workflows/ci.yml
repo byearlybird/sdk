@@ -22,15 +22,17 @@ jobs:
       - name: Install dependencies
         run: vp install --frozen-lockfile
 
-      - name: Install Playwright browsers
-        working-directory: packages/components
-        run: vp exec playwright install --with-deps chromium
+      # Workspace packages resolve to dist/, so type checking and tests need
+      # the packages built first.
+      - name: Build
+        run: vp run -r build
 
       - name: Format, lint, and type check
         run: vp check
 
+      - name: Install Playwright browsers
+        working-directory: packages/components
+        run: vp exec playwright install --with-deps chromium
+
       - name: Test
         run: vp run -r test
-
-      - name: Build
-        run: vp run -r build

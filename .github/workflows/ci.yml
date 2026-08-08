@@ -16,8 +16,13 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Install Vite+
-        run: npm install -g vite-plus@0.2.6
+      # A globally npm-installed vp resolves its toolchain from its own
+      # node_modules, so `vp pack` cannot find the project's TypeScript for
+      # tsgo dts emit. setup-vp installs Vite+ so it uses the project install.
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: "24"
+          cache: true
 
       - name: Install dependencies
         run: vp install --frozen-lockfile

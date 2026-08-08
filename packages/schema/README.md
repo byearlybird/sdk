@@ -2,7 +2,14 @@
 
 A seriously lightweight [Standard Schema](https://standardschema.dev) library.
 
-Schema by Early Bird provides just the absolute basics needed to define strict, simple schemas for JSON-serializable data. Supported data types include strings, numbers, booleans, null, plain objects, and arrays.
+This one gives you just the absolute basics needed to define strict, simple schemas for JSON-serializable data: strings, numbers, booleans, null, plain objects, and arrays.
+
+That's the whole library, and it's small on purpose. If you're validating JSON at a boundary and want the smallest thing that does it strictly, I think this is a good fit. If you need unions, transforms, coercion, or anything else in [Limits](#limits), a fuller validator is probably the better call.
+
+> [!NOTE]
+> **Status: Beta.** The public API is mostly settled, but I'm not calling it done yet. Breaking
+> changes are still possible before 1.0, and I'll call them out in the changelog rather than ship
+> them quietly.
 
 ## Install
 
@@ -37,7 +44,7 @@ if (result.issues) {
 }
 ```
 
-Validation returns a result rather than throwing. On success the result has a `value`; on failure it has `issues`, and every issue carries a `message` plus the `path` to the value that failed:
+Validation hands back a result rather than throwing. On success the result has a `value`; on failure it has `issues`, and every issue carries a `message` plus the `path` to the value that failed:
 
 ```ts
 taskSchema.validate({ id: "t1", title: "", tags: ["a", "a"] }).issues;
@@ -106,16 +113,16 @@ type Task = InferOutput<typeof taskSchema>;
 
 ### Invalid options throw
 
-Options are validated when the schema is built, not when a value is validated, so a mistake surfaces at startup rather than at some later request:
+Options are checked when the schema is built, not when a value is validated, so a mistake shows up at startup instead of at some later request:
 
 ```ts
 number({ min: 2, default: 1 }); // TypeError: Invalid default. Expected at least 2.
 string({ pattern: "task" }); // TypeError: Invalid pattern.
 ```
 
-Defaults are also snapshotted at that point. Mutating an object or array you passed as a `default` afterwards does not change what the schema produces, and a filled default is never shared between validations.
+Defaults get snapshotted at that point too. Mutating an object or array you passed as a `default` afterwards won't change what the schema produces, and a filled default is never shared between validations.
 
-`undefined` is not a default — omit the option instead. This always throws at runtime, and if your project sets [`exactOptionalPropertyTypes`](https://www.typescriptlang.org/tsconfig/#exactOptionalPropertyTypes) it is a compile error as well. That setting is not required to use this package.
+`undefined` is not a default, so just omit the option instead. This always throws at runtime, and if your project sets [`exactOptionalPropertyTypes`](https://www.typescriptlang.org/tsconfig/#exactOptionalPropertyTypes) it's a compile error as well. That setting isn't required to use this package.
 
 ```ts
 string({ default: undefined }); // TypeError: Invalid default. Expected a defined value.
@@ -135,14 +142,14 @@ Objects and arrays are rebuilt during validation, so the result is a fresh struc
 
 ## Limits
 
-This package is deliberately small. It has no unions, records, tuples, intersections, transforms, or coercion, and none are planned.
+This package is small on purpose. No unions, records, tuples, intersections, transforms, or coercion, and none of those are planned.
 
-Also worth knowing:
+A few other things worth knowing:
 
-- **ESM only.** There is no CommonJS build; `require()` will not work.
+- **ESM only.** There's no CommonJS build, so `require()` won't work.
 - **Synchronous.** `validate` never returns a promise.
-- **Composition accepts only Early Bird schemas.** `object()` and `array()` take schemas from this package, not arbitrary Standard Schema implementations.
-- **Objects are strict.** Unknown keys are an error; there is no passthrough or strip mode.
+- **Composition only takes Early Bird schemas.** `object()` and `array()` want schemas from this package, not arbitrary Standard Schema implementations.
+- **Objects are strict.** Unknown keys are an error, and there's no passthrough or strip mode.
 - **No optional-without-default.** Every key in the output type is present. To model an absent value, use `nullable: true, default: null` and read it as `null`.
 
 ## License

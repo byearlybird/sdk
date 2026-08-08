@@ -67,7 +67,7 @@ app.post("/tasks", sValidator("json", taskSchema), (c) => c.json(c.req.valid("js
 Every schema accepts two shared options:
 
 - `nullable` — allow `null` in addition to the base value.
-- `default` — value substituted when the input is `undefined`, which makes the input optional. Must be a value the schema accepts. A `null` default requires `nullable: true`.
+- `default` — value substituted when the input is `undefined`, which makes the input optional. Either a fixed value or a synchronous function called each time a default is needed, e.g. `default: () => Date.now()`. Either way, the result must be a value the schema accepts. A default that is (or can return) `null` requires `nullable: true`.
 
 ### `string(options?)`
 
@@ -120,7 +120,16 @@ number({ min: 2, default: 1 }); // TypeError: Invalid default. Expected at least
 string({ pattern: "task" }); // TypeError: Invalid pattern.
 ```
 
-Defaults get snapshotted at that point too. Mutating an object or array you passed as a `default` afterwards won't change what the schema produces, and a filled default is never shared between validations.
+Fixed defaults get snapshotted at that point too. Mutating an object or array you passed as a `default` afterwards won't change what the schema produces, and a filled default is never shared between validations.
+
+A default factory is different: it isn't called until a value actually needs defaulting, so a broken factory doesn't throw until then, and its return value is validated on every call rather than once upfront.
+
+```ts
+const rowSchema = object({
+  id: string({ default: () => crypto.randomUUID() }),
+  createdAt: number({ default: () => Date.now() }),
+});
+```
 
 `undefined` is not a default, so just omit the option instead. This always throws at runtime, and if your project sets [`exactOptionalPropertyTypes`](https://www.typescriptlang.org/tsconfig/#exactOptionalPropertyTypes) it's a compile error as well. That setting isn't required to use this package.
 

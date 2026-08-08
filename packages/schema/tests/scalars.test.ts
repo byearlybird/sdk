@@ -1,4 +1,4 @@
-import { describe, expect, expectTypeOf, it } from "vite-plus/test";
+import { describe, expect, expectTypeOf, it, vi } from "vite-plus/test";
 
 import type { InferInput, InferOutput } from "../src/schema.ts";
 import { boolean, number, string } from "../src/scalars.ts";
@@ -173,6 +173,31 @@ describe("modifiers", () => {
     expect(number({ default: 0 }).validate(5)).toEqual({ value: 5 });
   });
 
+  it("calls a default factory each time a default is needed", () => {
+    let count = 0;
+    const schema = number({ default: () => ++count });
+
+    expect(schema.validate(undefined)).toEqual({ value: 1 });
+    expect(schema.validate(undefined)).toEqual({ value: 2 });
+    expect(schema.validate(5)).toEqual({ value: 5 });
+    expect(count).toBe(2);
+  });
+
+  it("does not call a default factory when the schema is created", () => {
+    const factory = vi.fn(() => 1);
+    number({ default: factory });
+
+    expect(factory).not.toHaveBeenCalled();
+  });
+
+  it("validates a default factory's return value on use, not on creation", () => {
+    const schema = number({ min: 2, default: () => 1 });
+
+    expect(schema.validate(undefined)).toEqual({
+      issues: [{ message: "Expected at least 2." }],
+    });
+  });
+
   it("captures options when the schema is created", () => {
     const options: { default?: number; nullable?: boolean } = { default: 1 };
     const numberSchema = number(options);
@@ -259,6 +284,18 @@ describe("modifiers", () => {
       "Invalid default. Expected a finite number.",
     );
     expect(number({ nullable: true, default: null }).validate(undefined)).toEqual({ value: null });
+  });
+
+  it("requires nullable for a default factory that can return null", () => {
+    const createInvalidSchema = () => {
+      // @ts-expect-error A default factory that can return null requires nullable: true.
+      number({ default: () => null });
+    };
+
+    expectTypeOf(createInvalidSchema).toBeFunction();
+    expect(number({ nullable: true, default: () => null }).validate(undefined)).toEqual({
+      value: null,
+    });
   });
 
   it("includes null when nullable is a widened boolean", () => {

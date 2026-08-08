@@ -6,7 +6,7 @@ import {
   defineSchema,
   type NullDefaultConstraint,
   type NullableValue,
-  type OptionValue,
+  type ResolvedDefault,
   type SchemaOptions,
 } from "./internal.ts";
 
@@ -54,7 +54,7 @@ type ScalarInput<BaseValue extends ScalarValue, Options> = DefaultableInput<
 
 /** Rejects defaults outside an enumerated schema's allowed values. */
 type EnumeratedDefaultConstraint<BaseValue extends ScalarValue, Options> =
-  Exclude<OptionValue<Options, "default">, null | undefined> extends SelectedScalarValue<
+  Exclude<ResolvedDefault<Options>, null | undefined> extends SelectedScalarValue<
     BaseValue,
     Options
   >

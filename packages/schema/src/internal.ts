@@ -37,10 +37,21 @@ export function defineSchema<Input, Output>(
     return validateResolvedValue(value);
   };
 
-  const defaultValue = hasDefault ? snapshotDefault(options.default, resolve) : undefined;
+  const defaultOption = options?.default;
+  const defaultFactory = typeof defaultOption === "function" ? defaultOption : undefined;
+  const defaultValue =
+    hasDefault && defaultFactory === undefined
+      ? snapshotDefault(defaultOption, resolve)
+      : undefined;
 
   const validate = (value: unknown): StandardSchemaV1.Result<unknown> =>
-    resolve(value === undefined && hasDefault ? defaultValue : value);
+    resolve(
+      value === undefined && hasDefault
+        ? defaultFactory
+          ? defaultFactory()
+          : defaultValue
+        : value,
+    );
 
   const standardSchemaProps = {
     version: 1,
@@ -92,18 +103,28 @@ export interface SchemaOptions<Value> {
   readonly nullable?: boolean;
   /**
    * Value substituted when the input is `undefined`. Makes the input optional.
-   * Must be a value the schema accepts; `undefined` itself is not a default.
+   * Either a fixed value or a synchronous function called each time a default
+   * is needed. Either way, the result must be a value the schema accepts;
+   * `undefined` itself is not a default.
    */
-  readonly default?: Value | null;
+  readonly default?: Value | null | (() => Value | null);
 }
 
 export type OptionValue<Options, Key extends PropertyKey> = Key extends keyof Options
   ? Options[Key]
   : never;
 
+/** Unwraps a default option that may be a fixed value or a synchronous factory. */
+export type ResolvedDefault<Options> =
+  OptionValue<Options, "default"> extends never
+    ? never
+    : OptionValue<Options, "default"> extends () => infer Value
+      ? Value
+      : OptionValue<Options, "default">;
+
 /** Rejects a possibly null default unless the schema is explicitly nullable. */
 export type NullDefaultConstraint<Options> =
-  null extends OptionValue<Options, "default">
+  null extends ResolvedDefault<Options>
     ? Options extends { nullable: true }
       ? unknown
       : never

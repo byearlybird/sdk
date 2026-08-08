@@ -283,6 +283,16 @@ describe("defaults", () => {
     expect(first.value).not.toBe(second.value);
   });
 
+  it("calls a composite default factory each time a default is needed", () => {
+    let count = 0;
+    const objectSchema = object({ count: number() }, { default: () => ({ count: ++count }) });
+    const arraySchema = array(number(), { default: () => [count] });
+
+    expect(objectSchema.validate(undefined)).toEqual({ value: { count: 1 } });
+    expect(objectSchema.validate(undefined)).toEqual({ value: { count: 2 } });
+    expect(arraySchema.validate(undefined)).toEqual({ value: [2] });
+  });
+
   it("accepts an object default containing an array field", () => {
     const schema = object({ tags: array(string()) }, { default: { tags: ["a"] } });
 

@@ -30,16 +30,17 @@ export function defineSchema<Input, Output>(
 ): Schema<Input, Output> {
   assertBooleanOption(options?.nullable, "nullable");
   const hasDefault = options !== undefined && "default" in options;
-  const defaultValue = options?.default;
   const nullable = options?.nullable === true;
 
-  const validate = (value: unknown): StandardSchemaV1.Result<unknown> => {
-    const resolvedValue = value === undefined && hasDefault ? defaultValue : value;
-    if (resolvedValue === null && nullable) {
-      return { value: null };
-    }
-    return validateResolvedValue(resolvedValue);
+  const resolve = (value: unknown): StandardSchemaV1.Result<unknown> => {
+    if (value === null && nullable) return { value: null };
+    return validateResolvedValue(value);
   };
+
+  const defaultValue = hasDefault ? snapshotDefault(options.default, resolve) : undefined;
+
+  const validate = (value: unknown): StandardSchemaV1.Result<unknown> =>
+    resolve(value === undefined && hasDefault ? defaultValue : value);
 
   const standardSchemaProps = {
     version: 1,
@@ -50,11 +51,49 @@ export function defineSchema<Input, Output>(
   return { "~standard": standardSchemaProps, validate } as Schema<Input, Output>;
 }
 
+/**
+ * Validates a default when the schema is built, so an unusable one fails there
+ * instead of at some later validation, and returns the validated copy. Object
+ * and array validators rebuild their values, so that copy no longer aliases
+ * whatever the caller passed in and cannot be changed by mutating it.
+ */
+function snapshotDefault(
+  defaultValue: unknown,
+  resolve: (value: unknown) => StandardSchemaV1.Result<unknown>,
+): unknown {
+  if (defaultValue === undefined) {
+    throw new TypeError("Invalid default. Expected a defined value.");
+  }
+
+  const result = resolve(defaultValue);
+  if (result.issues) {
+    const [issue] = result.issues;
+    throw new TypeError(
+      `Invalid default. ${issue === undefined ? "" : describeIssue(issue)}`.trim(),
+    );
+  }
+  return result.value;
+}
+
+/** Appends the failing location to an issue message when the issue has a path. */
+function describeIssue(issue: StandardSchemaV1.Issue): string {
+  const { message, path } = issue;
+  if (path === undefined || path.length === 0) return message;
+
+  const location = path
+    .map((segment) => String(typeof segment === "object" ? segment.key : segment))
+    .join(".");
+  return `${message} (at ${location})`;
+}
+
 /** Options shared by schemas that support nullable values and defaults. */
 export interface SchemaOptions<Value> {
   /** Allow `null` in addition to the base value. */
   readonly nullable?: boolean;
-  /** Value substituted when the input is `undefined`. Makes the input optional. */
+  /**
+   * Value substituted when the input is `undefined`. Makes the input optional.
+   * Must be a value the schema accepts; `undefined` itself is not a default.
+   */
   readonly default?: Value | null;
 }
 

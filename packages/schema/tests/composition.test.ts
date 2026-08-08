@@ -84,11 +84,9 @@ describe("array", () => {
   });
 
   it("applies uniqueItems to array defaults", () => {
-    const schema = array(number(), { uniqueItems: true, default: [1, 1] });
-
-    expect(schema.validate(undefined)).toEqual({
-      issues: [{ message: "Expected unique items.", path: [1] }],
-    });
+    expect(() => array(number(), { uniqueItems: true, default: [1, 1] })).toThrow(
+      "Invalid default. Expected unique items. (at 1)",
+    );
   });
 
   it("captures and validates the uniqueItems option", () => {
@@ -112,9 +110,15 @@ describe("array", () => {
   });
 
   it("requires nullable for a null default", () => {
-    // @ts-expect-error A null default requires nullable: true.
-    array(string(), { default: null });
+    const createInvalidSchema = () => {
+      // @ts-expect-error A null default requires nullable: true.
+      array(string(), { default: null });
+    };
 
+    expectTypeOf(createInvalidSchema).toBeFunction();
+    expect(() => array(string(), { default: null } as never)).toThrow(
+      "Invalid default. Expected an array.",
+    );
     expect(array(string(), { nullable: true, default: null }).validate(undefined)).toEqual({
       value: null,
     });
@@ -202,9 +206,15 @@ describe("object", () => {
   });
 
   it("requires nullable for a null default", () => {
-    // @ts-expect-error A null default requires nullable: true.
-    object({}, { default: null });
+    const createInvalidSchema = () => {
+      // @ts-expect-error A null default requires nullable: true.
+      object({}, { default: null });
+    };
 
+    expectTypeOf(createInvalidSchema).toBeFunction();
+    expect(() => object({}, { default: null } as never)).toThrow(
+      "Invalid default. Expected a plain object.",
+    );
     expect(object({}, { nullable: true, default: null }).validate(undefined)).toEqual({
       value: null,
     });
@@ -236,5 +246,80 @@ describe("object", () => {
       tags?: string[];
       subtasks: { title: string; done?: boolean }[];
     }>();
+  });
+});
+
+describe("defaults", () => {
+  it("snapshots composite defaults when the schema is created", () => {
+    const objectDefault = { count: 1 };
+    const objectSchema = object({ count: number() }, { default: objectDefault });
+    const arrayDefault = [1];
+    const arraySchema = array(number(), { default: arrayDefault });
+
+    objectDefault.count = 2;
+    arrayDefault[0] = 2;
+    arrayDefault.push(3);
+
+    expect(objectSchema.validate(undefined)).toEqual({ value: { count: 1 } });
+    expect(arraySchema.validate(undefined)).toEqual({ value: [1] });
+  });
+
+  it("snapshots nested composite defaults", () => {
+    const nestedDefault = { inner: { count: 1 } };
+    const schema = object({ inner: object({ count: number() }) }, { default: nestedDefault });
+
+    nestedDefault.inner.count = 2;
+
+    expect(schema.validate(undefined)).toEqual({ value: { inner: { count: 1 } } });
+  });
+
+  it("never shares a filled default between validations", () => {
+    const schema = object({ count: number() }, { default: { count: 1 } });
+    const first = schema.validate(undefined);
+    const second = schema.validate(undefined);
+
+    if (first.issues || second.issues) throw new Error("Expected the default to validate.");
+    expect(first.value).toEqual({ count: 1 });
+    expect(first.value).not.toBe(second.value);
+  });
+
+  it("accepts an object default containing an array field", () => {
+    const schema = object({ tags: array(string()) }, { default: { tags: ["a"] } });
+
+    expect(schema.validate(undefined)).toEqual({ value: { tags: ["a"] } });
+    expectTypeOf<InferOutput<typeof schema>>().toEqualTypeOf<{ tags: string[] }>();
+  });
+
+  it("rejects invalid composite defaults when the schema is created", () => {
+    expect(() => object({ count: number() }, { default: { count: "one" } as never })).toThrow(
+      "Invalid default. Expected a finite number. (at count)",
+    );
+    expect(() => array(number(), { default: ["one"] as never })).toThrow(
+      "Invalid default. Expected a finite number. (at 0)",
+    );
+    expect(() =>
+      object(
+        { inner: object({ count: number() }) },
+        { default: { inner: { count: "one" } } as never },
+      ),
+    ).toThrow("Invalid default. Expected a finite number. (at inner.count)");
+  });
+
+  it("rejects an undefined default", () => {
+    const createInvalidSchema = () => {
+      // @ts-expect-error `undefined` is not a default.
+      string({ default: undefined });
+    };
+
+    expectTypeOf(createInvalidSchema).toBeFunction();
+    for (const createSchema of [
+      () => string({ default: undefined as never }),
+      () => number({ default: undefined as never }),
+      () => boolean({ default: undefined as never }),
+      () => object({}, { default: undefined as never }),
+      () => array(string(), { default: undefined as never }),
+    ]) {
+      expect(createSchema).toThrow("Invalid default. Expected a defined value.");
+    }
   });
 });

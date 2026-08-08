@@ -68,18 +68,21 @@ type EnumeratedDefaultConstraint<BaseValue extends ScalarValue, Options> =
  */
 type ScalarBounds = Readonly<{
   kind: "length" | "value";
-  maximum?: number;
-  minimum?: number;
+  // Explicitly `| undefined`: these are built from options that may be absent.
+  maximum?: number | undefined;
+  minimum?: number | undefined;
 }>;
 
+// Optional members are explicitly `| undefined`: every one is built from a
+// caller option that may be absent.
 type ScalarDefinition<Value extends ScalarValue> = Readonly<{
-  allowedValues?: readonly Value[];
-  bounds?: ScalarBounds;
+  allowedValues?: readonly Value[] | undefined;
+  bounds?: ScalarBounds | undefined;
   expectedTypeMessage: string;
-  integer?: boolean;
+  integer?: boolean | undefined;
   isExpectedType: (value: unknown) => value is Value;
   options: SchemaOptions<Value> | undefined;
-  pattern?: RegExp;
+  pattern?: RegExp | undefined;
 }>;
 
 function defineScalarSchema<Value extends ScalarValue, Input, Output>(
@@ -119,12 +122,6 @@ function defineScalarSchema<Value extends ScalarValue, Input, Output>(
     }
     return undefined;
   };
-
-  // A default is substituted without revalidation, so it must hold on its own.
-  if (options !== undefined && "default" in options && options.default !== null) {
-    const message = findIssueMessage(options.default);
-    if (message !== undefined) throw new TypeError(`Invalid default. ${message}`);
-  }
 
   return defineSchema<Input, Output>((value) => {
     const message = findIssueMessage(value);

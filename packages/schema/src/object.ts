@@ -12,7 +12,17 @@ import {
 
 type SchemaFields = Record<string, Schema<unknown, unknown>>;
 
-type ObjectOptions<ObjectShape> = SchemaOptions<ObjectShape>;
+/**
+ * Tolerates readonly arrays anywhere inside a value. Options are inferred with
+ * `const`, so an array written inline in a default arrives as a readonly tuple.
+ */
+type WithReadonlyArrays<Value> = Value extends readonly (infer Item)[]
+  ? readonly WithReadonlyArrays<Item>[]
+  : Value extends object
+    ? { [Key in keyof Value]: WithReadonlyArrays<Value[Key]> }
+    : Value;
+
+type ObjectOptions<ObjectShape> = SchemaOptions<WithReadonlyArrays<ObjectShape>>;
 
 type SimplifyObject<ObjectType> = {
   [Key in keyof ObjectType]: ObjectType[Key];

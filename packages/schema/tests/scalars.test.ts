@@ -249,9 +249,15 @@ describe("modifiers", () => {
   });
 
   it("requires nullable for a null default", () => {
-    // @ts-expect-error A null default requires nullable: true.
-    number({ default: null });
+    const createInvalidSchema = () => {
+      // @ts-expect-error A null default requires nullable: true.
+      number({ default: null });
+    };
 
+    expectTypeOf(createInvalidSchema).toBeFunction();
+    expect(() => number({ default: null } as never)).toThrow(
+      "Invalid default. Expected a finite number.",
+    );
     expect(number({ nullable: true, default: null }).validate(undefined)).toEqual({ value: null });
   });
 

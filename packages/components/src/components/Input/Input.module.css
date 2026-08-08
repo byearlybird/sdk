@@ -3,23 +3,23 @@
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  min-height: var(--size-10);
-  border: var(--size-px) solid var(--eb-color-border);
+  min-height: var(--eb-size-10);
+  border: var(--eb-border-width) solid var(--eb-color-border);
   border-radius: var(--eb-radius-input);
   color: var(--eb-color-text);
   background: var(--eb-color-background);
   font-family: var(--eb-font-family);
-  font-size: var(--scale-00);
+  font-size: var(--eb-font-size-body);
   font-style: normal;
-  font-weight: var(--weight-regular);
-  line-height: var(--line-none);
+  font-weight: var(--eb-font-weight-regular);
+  line-height: var(--eb-line-height-none);
   transition:
     border-color var(--eb-motion-duration) var(--eb-motion-easing-standard),
     outline-color var(--eb-motion-duration) var(--eb-motion-easing-standard);
 }
 
 .input {
-  padding: 0 var(--size-4);
+  padding: 0 var(--eb-size-4);
   outline: 0;
   caret-color: var(--eb-color-primary);
 }
@@ -30,13 +30,13 @@
 
 .input:focus-visible {
   border-color: var(--eb-color-primary);
-  outline: var(--size-px) solid var(--eb-color-primary);
-  outline-offset: var(--size-px);
+  outline: var(--eb-border-width) solid var(--eb-color-primary);
+  outline-offset: var(--eb-border-width);
 }
 
 .input[data-invalid],
 .input[aria-invalid="true"] {
-  border-color: var(--color-red-700);
+  border-color: var(--eb-color-danger);
 }
 
 .input[data-disabled] {
@@ -61,13 +61,13 @@
 
 .group:focus-within {
   border-color: var(--eb-color-primary);
-  outline: var(--size-px) solid var(--eb-color-primary);
-  outline-offset: var(--size-px);
+  outline: var(--eb-border-width) solid var(--eb-color-primary);
+  outline-offset: var(--eb-border-width);
 }
 
 .group:has(.input[data-invalid]),
 .group:has(.input[aria-invalid="true"]) {
-  border-color: var(--color-red-700);
+  border-color: var(--eb-color-danger);
 }
 
 .group:has(.input[data-disabled]) {
@@ -78,7 +78,7 @@
 .group > .input {
   flex: 1;
   min-width: 0;
-  padding: 0 var(--size-4);
+  padding: 0 var(--eb-size-4);
   border: 0;
   border-radius: 0;
   outline: 0;
@@ -94,19 +94,19 @@
 }
 
 .icon + .input {
-  padding-inline-start: var(--size-2);
+  padding-inline-start: var(--eb-size-2);
 }
 
 .action {
   align-self: stretch;
   flex: none;
-  padding-inline: var(--size-4);
+  padding-inline: var(--eb-size-4);
   border: 0;
-  border-inline-start: var(--size-px) solid var(--eb-color-border);
+  border-inline-start: var(--eb-border-width) solid var(--eb-color-border);
   color: var(--eb-color-text);
   background: var(--eb-color-background);
   font: inherit;
-  font-weight: var(--weight-semibold);
+  font-weight: var(--eb-font-weight-semibold);
   cursor: default;
   transition:
     background-color var(--eb-motion-duration) var(--eb-motion-easing-standard),
@@ -142,7 +142,7 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  margin-inline-start: var(--size-4);
+  margin-inline-start: var(--eb-size-4);
   width: 1em;
   height: 1em;
   color: currentcolor;

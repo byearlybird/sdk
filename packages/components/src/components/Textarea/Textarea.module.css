@@ -3,18 +3,18 @@
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  min-height: calc(var(--size-10) * 3);
-  padding: var(--size-4);
-  border: var(--size-px) solid var(--eb-color-border);
+  min-height: calc(var(--eb-size-10) * 3);
+  padding: var(--eb-size-4);
+  border: var(--eb-border-width) solid var(--eb-color-border);
   border-radius: var(--eb-radius-surface);
   color: var(--eb-color-text);
   background: var(--eb-color-background);
   caret-color: var(--eb-color-primary);
   font-family: var(--eb-font-family);
-  font-size: var(--scale-00);
+  font-size: var(--eb-font-size-body);
   font-style: normal;
-  font-weight: var(--weight-regular);
-  line-height: var(--line-normal);
+  font-weight: var(--eb-font-weight-regular);
+  line-height: var(--eb-line-height-normal);
   resize: vertical;
   transition:
     border-color var(--eb-motion-duration) var(--eb-motion-easing-standard),
@@ -37,13 +37,13 @@
 
 .textarea:focus-visible {
   border-color: var(--eb-color-primary);
-  outline: var(--size-px) solid var(--eb-color-primary);
-  outline-offset: var(--size-px);
+  outline: var(--eb-border-width) solid var(--eb-color-primary);
+  outline-offset: var(--eb-border-width);
 }
 
 .textarea[data-invalid],
 .textarea[aria-invalid="true"] {
-  border-color: var(--color-red-700);
+  border-color: var(--eb-color-danger);
 }
 
 .textarea:disabled {

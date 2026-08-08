@@ -2,22 +2,23 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--size-2);
+  gap: var(--eb-size-2);
   color: var(--eb-color-text);
   font-family: var(--eb-font-family);
-  font-size: var(--scale-00);
+  font-size: var(--eb-font-size-body);
 }
 
 .root {
+  position: relative;
   display: inline-flex;
   flex: none;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: var(--size-4);
-  height: var(--size-4);
+  width: var(--eb-size-4);
+  height: var(--eb-size-4);
   padding: 0;
-  border: var(--size-px) solid var(--eb-color-border);
+  border: var(--eb-border-width) solid var(--eb-color-border);
   border-radius: 50%;
   color: var(--eb-color-primary-text);
   background: var(--eb-color-background);
@@ -26,6 +27,18 @@
     border-color var(--eb-motion-duration) var(--eb-motion-easing-standard),
     background-color var(--eb-motion-duration) var(--eb-motion-easing-standard);
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Expands the pointer target to the 24px WCAG minimum without growing the visual box. */
+.root::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--eb-size-6);
+  height: var(--eb-size-6);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .root[data-checked] {
@@ -38,8 +51,8 @@
 }
 
 .root:focus-visible {
-  outline: calc(var(--size-px) * 2) solid var(--eb-color-primary);
-  outline-offset: calc(var(--size-px) * 2);
+  outline: calc(var(--eb-border-width) * 2) solid var(--eb-color-primary);
+  outline-offset: calc(var(--eb-border-width) * 2);
 }
 
 .root[data-disabled] {
@@ -49,8 +62,8 @@
 
 .indicator {
   display: block;
-  width: calc(var(--size-2) - calc(var(--size-px) * 2));
-  height: calc(var(--size-2) - calc(var(--size-px) * 2));
+  width: calc(var(--eb-size-2) - calc(var(--eb-border-width) * 2));
+  height: calc(var(--eb-size-2) - calc(var(--eb-border-width) * 2));
   border-radius: 50%;
   background: currentcolor;
 }

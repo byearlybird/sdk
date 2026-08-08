@@ -23,7 +23,7 @@ const META = {
   },
   decorators: [
     (Story) => (
-      <div style={{ width: "calc(var(--size-10) * 10)" }}>
+      <div style={{ width: "calc(var(--eb-size-10) * 10)" }}>
         <Story />
       </div>
     ),

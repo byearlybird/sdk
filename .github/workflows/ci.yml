@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Vite+
+        run: npm install -g vite-plus@0.2.6
+
+      - name: Install dependencies
+        run: vp install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: vp exec playwright install --with-deps chromium
+
+      - name: Format, lint, and type check
+        run: vp check
+
+      - name: Test
+        run: vp run -r test
+
+      - name: Build
+        run: vp run -r build

@@ -5,16 +5,16 @@
   justify-content: center;
   box-sizing: border-box;
   max-width: 100%;
-  min-height: var(--size-10);
-  padding-inline: var(--size-4);
-  gap: var(--size-2);
-  border: var(--size-px) solid var(--eb-color-primary);
+  min-height: var(--eb-size-10);
+  padding-inline: var(--eb-size-4);
+  gap: var(--eb-size-2);
+  border: var(--eb-border-width) solid var(--eb-color-primary);
   border-radius: var(--eb-radius-button);
   font-family: var(--eb-font-family);
-  font-size: var(--scale-00);
+  font-size: var(--eb-font-size-body);
   font-style: normal;
-  font-weight: var(--weight-semibold);
-  line-height: var(--line-none);
+  font-weight: var(--eb-font-weight-semibold);
+  line-height: var(--eb-line-height-none);
   text-decoration: none;
   white-space: nowrap;
   cursor: default;
@@ -54,7 +54,7 @@
 }
 
 .iconSize {
-  width: var(--size-10);
+  width: var(--eb-size-10);
   padding-inline: 0;
   aspect-ratio: 1;
 }

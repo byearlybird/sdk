@@ -16,7 +16,7 @@ function ExampleRadioGroup({ disabled = false }: { disabled?: boolean }) {
       disabled={disabled}
       name="frequency"
       style={{
-        padding: "var(--size-4)",
+        padding: "var(--eb-size-4)",
         borderRadius: "var(--eb-radius-surface)",
         background: "var(--eb-color-background)",
       }}
@@ -27,8 +27,8 @@ function ExampleRadioGroup({ disabled = false }: { disabled?: boolean }) {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "var(--size-2)",
-            lineHeight: "var(--line-normal)",
+            gap: "var(--eb-size-2)",
+            lineHeight: "var(--eb-line-height-normal)",
           }}
         >
           <Radio value={option.value} />

@@ -3,10 +3,10 @@
   flex: none;
   align-items: center;
   box-sizing: border-box;
-  width: var(--size-10);
-  height: calc(var(--size-4) + var(--size-2));
-  padding: calc(var(--size-2) / 2);
-  border: var(--size-px) solid var(--eb-color-border);
+  width: var(--eb-size-10);
+  height: calc(var(--eb-size-4) + var(--eb-size-2));
+  padding: calc(var(--eb-size-2) / 2);
+  border: var(--eb-border-width) solid var(--eb-color-border);
   border-radius: var(--eb-radius-button);
   background: var(--eb-color-muted);
   cursor: default;
@@ -26,8 +26,8 @@
 }
 
 .root:focus-visible {
-  outline: calc(var(--size-px) * 2) solid var(--eb-color-primary);
-  outline-offset: calc(var(--size-px) * 2);
+  outline: calc(var(--eb-border-width) * 2) solid var(--eb-color-primary);
+  outline-offset: calc(var(--eb-border-width) * 2);
 }
 
 .root[data-disabled] {
@@ -37,8 +37,8 @@
 
 .thumb {
   display: block;
-  width: var(--size-4);
-  height: var(--size-4);
+  width: var(--eb-size-4);
+  height: var(--eb-size-4);
   border-radius: var(--eb-radius-button);
   background: var(--eb-color-background);
   translate: 0;
@@ -46,7 +46,7 @@
 }
 
 .thumb[data-checked] {
-  translate: var(--size-4);
+  translate: var(--eb-size-4);
 }
 
 @media (prefers-reduced-motion: reduce) {

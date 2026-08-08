@@ -1,7 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { expect, test } from "vite-plus/test";
 import {
-  BarChart,
   Button,
   Checkbox,
   Combobox,
@@ -20,12 +19,10 @@ import {
   DrawerTitle,
   DrawerTrigger,
   Input,
-  LineChart,
   Menu,
   MenuContent,
   MenuItem,
   MenuTrigger,
-  PieChart,
   Radio,
   RadioGroup,
   Select,
@@ -38,6 +35,7 @@ import {
   Switch,
   Textarea,
 } from "../src/index.ts";
+import { BarChart, LineChart, PieChart } from "../src/charts.ts";
 
 test("components render on the server", () => {
   const chartData = [
@@ -118,7 +116,7 @@ test("components render on the server", () => {
 
   expect(markup).toContain('type="button"');
   expect(markup).toContain("Line overview");
-  expect(markup).toContain("--chart-height:360px");
+  expect(markup).toContain("--eb-chart-height:360px");
   expect(markup).toContain('height="360"');
   expect(markup).toContain("Bar overview");
   expect(markup).toContain("Pie overview");

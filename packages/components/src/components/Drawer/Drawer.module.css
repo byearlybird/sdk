@@ -2,7 +2,7 @@
   position: fixed;
   z-index: 0;
   inset: 0;
-  background: color-mix(in srgb, var(--color-black) 50%, transparent);
+  background: color-mix(in srgb, var(--eb-color-scrim) 50%, transparent);
   opacity: calc(1 - var(--drawer-swipe-progress, 0));
   transition: opacity var(--eb-motion-duration) var(--eb-motion-easing-standard);
 }
@@ -24,16 +24,16 @@
   position: absolute;
   box-sizing: border-box;
   overflow: hidden;
-  border: var(--size-px) solid var(--eb-color-border);
+  border: var(--eb-border-width) solid var(--eb-color-border);
   border-radius: var(--eb-radius-surface);
   outline: 0;
   color: var(--eb-color-text);
   background: var(--eb-color-background);
   font-family: var(--eb-font-family);
-  font-size: var(--scale-00);
+  font-size: var(--eb-font-size-body);
   font-style: normal;
-  font-weight: var(--weight-regular);
-  line-height: var(--line-normal);
+  font-weight: var(--eb-font-weight-regular);
+  line-height: var(--eb-line-height-normal);
   pointer-events: auto;
   transition: transform var(--eb-motion-duration) var(--eb-motion-easing-standard);
 }
@@ -43,7 +43,7 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  max-height: calc(100dvh - var(--size-4));
+  max-height: calc(100dvh - var(--eb-size-4));
   transform: translateY(
     calc(var(--drawer-snap-point-offset, 0px) + var(--drawer-swipe-movement-y, 0px))
   );
@@ -54,7 +54,7 @@
   right: 0;
   left: 0;
   width: 100%;
-  max-height: calc(100dvh - var(--size-4));
+  max-height: calc(100dvh - var(--eb-size-4));
   transform: translateY(var(--drawer-swipe-movement-y, 0px));
 }
 
@@ -62,8 +62,8 @@
   top: 0;
   right: 0;
   bottom: 0;
-  width: calc(100% - (var(--size-4) * 2));
-  max-width: calc(var(--size-10) * 10);
+  width: calc(100% - (var(--eb-size-4) * 2));
+  max-width: calc(var(--eb-size-10) * 10);
   transform: translateX(var(--drawer-swipe-movement-x, 0px));
 }
 
@@ -71,8 +71,8 @@
   top: 0;
   bottom: 0;
   left: 0;
-  width: calc(100% - (var(--size-4) * 2));
-  max-width: calc(var(--size-10) * 10);
+  width: calc(100% - (var(--eb-size-4) * 2));
+  max-width: calc(var(--eb-size-10) * 10);
   transform: translateX(var(--drawer-swipe-movement-x, 0px));
 }
 
@@ -104,7 +104,7 @@
   position: relative;
   flex: none;
   width: 100%;
-  height: var(--size-8);
+  height: var(--eb-size-8);
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -112,10 +112,10 @@
 
 .swipeHandle::after {
   position: absolute;
-  top: var(--size-3);
+  top: var(--eb-size-3);
   left: 50%;
-  width: calc(var(--size-10) + var(--size-2));
-  height: var(--size-1);
+  width: calc(var(--eb-size-10) + var(--eb-size-2));
+  height: var(--eb-size-1);
   border-radius: var(--eb-radius-input);
   background: var(--eb-color-muted);
   content: "";
@@ -131,27 +131,27 @@
   width: 100%;
   height: 100%;
   overflow-y: auto;
-  padding: var(--size-4);
+  padding: var(--eb-size-4);
 }
 
 .title {
   margin: 0;
   color: var(--eb-color-text);
   font-family: var(--eb-font-family);
-  font-size: var(--scale-2);
+  font-size: var(--eb-font-size-title);
   font-style: normal;
-  font-weight: var(--weight-semibold);
-  line-height: var(--line-normal);
+  font-weight: var(--eb-font-weight-semibold);
+  line-height: var(--eb-line-height-normal);
 }
 
 .description {
-  margin: var(--size-2) 0 0;
+  margin: var(--eb-size-2) 0 0;
   color: var(--eb-color-text);
   font-family: var(--eb-font-family);
-  font-size: var(--scale-00);
+  font-size: var(--eb-font-size-body);
   font-style: normal;
-  font-weight: var(--weight-regular);
-  line-height: var(--line-normal);
+  font-weight: var(--eb-font-weight-regular);
+  line-height: var(--eb-line-height-normal);
   opacity: 0.75;
 }
 

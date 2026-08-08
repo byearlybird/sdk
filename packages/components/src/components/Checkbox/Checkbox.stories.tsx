@@ -14,13 +14,13 @@ function ExampleCheckbox({
       style={{
         display: "flex",
         alignItems: "center",
-        gap: "var(--size-2)",
+        gap: "var(--eb-size-2)",
         color: "var(--eb-color-text)",
         background: "var(--eb-color-background)",
-        padding: "var(--size-4)",
+        padding: "var(--eb-size-4)",
         borderRadius: "var(--eb-radius-surface)",
         fontFamily: "var(--eb-font-family)",
-        fontSize: "var(--scale-00)",
+        fontSize: "var(--eb-font-size-body)",
       }}
     >
       <Checkbox

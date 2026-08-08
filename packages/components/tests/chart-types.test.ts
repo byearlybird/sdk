@@ -1,5 +1,5 @@
 import { expectTypeOf, test } from "vite-plus/test";
-import type { ChartSeries, LineChartProps, PieChartProps } from "../src/index.ts";
+import type { ChartSeries, LineChartProps, PieChartProps } from "../src/charts.ts";
 
 interface ChartDatum {
   active: boolean;

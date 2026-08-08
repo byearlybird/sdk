@@ -6,9 +6,9 @@ import styles from "./ChartPrimitives.module.css";
 import type { ChartFrameProps, ChartValueFormatter } from "./Chart.types.ts";
 
 export const CHART_COLORS = [
-  "var(--eb-color-primary)",
-  "var(--eb-color-border)",
-  "var(--color-red-700)",
+  "var(--eb-chart-series-1)",
+  "var(--eb-chart-series-2)",
+  "var(--eb-chart-series-3)",
 ] as const;
 
 const DEFAULT_CHART_HEIGHT = 280;
@@ -21,7 +21,7 @@ interface ChartFrameInternalProps extends ChartFrameProps {
 }
 
 interface ChartStyle extends CSSProperties {
-  "--chart-height"?: string;
+  "--eb-chart-height"?: string;
 }
 
 interface ChartLegendItem {
@@ -35,7 +35,7 @@ function getChartStyle(height: number | undefined, style: CSSProperties | undefi
   const chartStyle: ChartStyle = { ...style };
 
   if (height !== undefined) {
-    chartStyle["--chart-height"] = `${height}px`;
+    chartStyle["--eb-chart-height"] = `${height}px`;
   }
 
   return chartStyle;

@@ -1,7 +1,7 @@
 .trigger[data-popup-open] {
   border-color: var(--eb-color-primary);
-  outline: var(--size-px) solid var(--eb-color-primary);
-  outline-offset: var(--size-px);
+  outline: var(--eb-border-width) solid var(--eb-color-primary);
+  outline-offset: var(--eb-border-width);
 }
 
 .backdrop {
@@ -17,18 +17,18 @@
 .popup {
   position: relative;
   box-sizing: border-box;
-  min-width: calc(var(--size-10) * 5);
-  padding: var(--size-2);
-  border: var(--size-px) solid var(--eb-color-border);
+  min-width: calc(var(--eb-size-10) * 5);
+  padding: var(--eb-size-2);
+  border: var(--eb-border-width) solid var(--eb-color-border);
   border-radius: var(--eb-radius-surface);
-  box-shadow: var(--shadow-elevated-content);
+  box-shadow: var(--eb-shadow-elevated-content);
   color: var(--eb-color-text);
   background: var(--eb-color-background);
   font-family: var(--eb-font-family);
-  font-size: var(--scale-00);
+  font-size: var(--eb-font-size-body);
   font-style: normal;
-  font-weight: var(--weight-regular);
-  line-height: var(--line-none);
+  font-weight: var(--eb-font-weight-regular);
+  line-height: var(--eb-line-height-none);
   outline: 0;
   transform-origin: var(--transform-origin);
   transition:
@@ -43,10 +43,10 @@
 }
 
 .arrow {
-  width: var(--size-2);
-  height: var(--size-2);
-  border-block-start: var(--size-px) solid var(--eb-color-border);
-  border-inline-start: var(--size-px) solid var(--eb-color-border);
+  width: var(--eb-size-2);
+  height: var(--eb-size-2);
+  border-block-start: var(--eb-border-width) solid var(--eb-color-border);
+  border-inline-start: var(--eb-border-width) solid var(--eb-color-border);
   background: var(--eb-color-background);
   transform: rotate(45deg);
 }
@@ -56,12 +56,12 @@
   display: flex;
   align-items: center;
   box-sizing: border-box;
-  min-height: var(--size-10);
-  padding-inline: var(--size-2);
-  gap: var(--size-2);
+  min-height: var(--eb-size-10);
+  padding-inline: var(--eb-size-2);
+  gap: var(--eb-size-2);
   border-radius: var(--eb-radius-button);
   color: inherit;
-  line-height: var(--line-normal);
+  line-height: var(--eb-line-height-normal);
   outline: 0;
   cursor: default;
   user-select: none;
@@ -86,7 +86,7 @@
 
 .selectionItem {
   display: grid;
-  grid-template-columns: var(--size-4) minmax(0, 1fr);
+  grid-template-columns: var(--eb-size-4) minmax(0, 1fr);
 }
 
 .itemIndicator {
@@ -94,35 +94,35 @@
   grid-column: 1;
   align-items: center;
   justify-content: center;
-  width: var(--size-4);
-  height: var(--size-4);
+  width: var(--eb-size-4);
+  height: var(--eb-size-4);
   line-height: 0;
 }
 
 .itemIndicator > svg {
   width: 100%;
   height: 100%;
-  stroke-width: calc(var(--size-px) * 2);
+  stroke-width: calc(var(--eb-border-width) * 2);
 }
 
 .radioIndicator::before {
-  width: var(--size-2);
-  height: var(--size-2);
+  width: var(--eb-size-2);
+  height: var(--eb-size-2);
   border-radius: 50%;
   background: currentcolor;
   content: "";
 }
 
 .groupLabel {
-  padding: var(--size-2);
-  font-weight: var(--weight-semibold);
-  line-height: var(--line-normal);
+  padding: var(--eb-size-2);
+  font-weight: var(--eb-font-weight-semibold);
+  line-height: var(--eb-line-height-normal);
   opacity: 0.65;
 }
 
 .separator {
-  height: var(--size-px);
-  margin-block: var(--size-2);
+  height: var(--eb-border-width);
+  margin-block: var(--eb-size-2);
   background: var(--eb-color-border);
 }
 

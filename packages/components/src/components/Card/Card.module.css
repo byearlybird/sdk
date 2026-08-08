@@ -2,16 +2,16 @@
   box-sizing: border-box;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  border: var(--size-px) solid var(--eb-color-border);
+  border: var(--eb-border-width) solid var(--eb-color-border);
   border-radius: var(--eb-radius-surface);
   overflow: hidden;
   color: var(--eb-color-text);
   background: var(--eb-color-background);
   font-family: var(--eb-font-family);
-  font-size: var(--scale-00);
+  font-size: var(--eb-font-size-body);
   font-style: normal;
-  font-weight: var(--weight-regular);
-  line-height: var(--line-normal);
+  font-weight: var(--eb-font-weight-regular);
+  line-height: var(--eb-line-height-normal);
 }
 
 .card > :not(.image) {
@@ -20,26 +20,26 @@
 
 .header {
   box-sizing: border-box;
-  padding: var(--size-4) var(--size-4) 0;
+  padding: var(--eb-size-4) var(--eb-size-4) 0;
 }
 
 .title {
   margin: 0;
   color: var(--eb-color-text);
   font-family: var(--eb-font-family);
-  font-size: var(--scale-2);
+  font-size: var(--eb-font-size-title);
   font-style: normal;
-  font-weight: var(--weight-semibold);
-  line-height: var(--line-normal);
+  font-weight: var(--eb-font-weight-semibold);
+  line-height: var(--eb-line-height-normal);
 }
 
 .content {
   box-sizing: border-box;
-  padding: var(--size-4);
+  padding: var(--eb-size-4);
 }
 
 .header + .content {
-  padding-top: var(--size-2);
+  padding-top: var(--eb-size-2);
 }
 
 .image {
@@ -48,8 +48,8 @@
   grid-column: 1;
   align-self: center;
   width: 100%;
-  max-width: calc(var(--size-10) * 3);
-  margin: var(--size-3) 0 var(--size-3) var(--size-3);
+  max-width: calc(var(--eb-size-10) * 3);
+  margin: var(--eb-size-3) 0 var(--eb-size-3) var(--eb-size-3);
   aspect-ratio: 1;
   border-radius: var(--eb-radius-surface);
   object-fit: cover;
@@ -59,12 +59,12 @@
   grid-row: 1;
   grid-column: 2;
   align-self: end;
-  padding: var(--size-3) var(--size-3) 0;
+  padding: var(--eb-size-3) var(--eb-size-3) 0;
 }
 
 .image ~ .content {
   grid-row: 2;
   grid-column: 2;
   align-self: start;
-  padding: var(--size-2) var(--size-3) var(--size-3);
+  padding: var(--eb-size-2) var(--eb-size-3) var(--eb-size-3);
 }

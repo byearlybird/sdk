@@ -5,8 +5,8 @@
   width: 100%;
   min-width: 0;
   margin: 0;
-  padding: var(--size-4);
-  border: var(--size-px) solid var(--eb-color-muted);
+  padding: var(--eb-size-4);
+  border: var(--eb-border-width) solid var(--eb-color-muted);
   border-radius: var(--eb-radius-surface);
   color: var(--eb-color-text);
   background: var(--eb-color-background);
@@ -15,79 +15,79 @@
 
 .header {
   display: grid;
-  gap: calc(var(--size-2) / 2);
-  margin-block-end: var(--size-4);
+  gap: calc(var(--eb-size-2) / 2);
+  margin-block-end: var(--eb-size-4);
 }
 
 .title {
-  font-size: var(--scale-2);
-  font-weight: var(--weight-semibold);
-  line-height: var(--line-normal);
+  font-size: var(--eb-font-size-title);
+  font-weight: var(--eb-font-weight-semibold);
+  line-height: var(--eb-line-height-normal);
   letter-spacing: -0.02em;
 }
 
 .description {
   color: var(--eb-color-text);
-  font-size: var(--scale-00);
-  line-height: var(--line-normal);
+  font-size: var(--eb-font-size-body);
+  line-height: var(--eb-line-height-normal);
 }
 
 .plot {
   width: 100%;
-  height: var(--chart-height, calc(var(--size-10) * 7));
+  height: var(--eb-chart-height, calc(var(--eb-size-10) * 7));
 }
 
 .tooltip {
-  min-width: calc(var(--size-10) * 3);
-  padding: var(--size-2);
-  border: var(--size-px) solid var(--eb-color-muted);
+  min-width: calc(var(--eb-size-10) * 3);
+  padding: var(--eb-size-2);
+  border: var(--eb-border-width) solid var(--eb-color-muted);
   border-radius: var(--eb-radius-surface);
   color: var(--eb-color-text);
   background: var(--eb-color-background);
-  box-shadow: 0 var(--size-2) var(--size-4) color-mix(in srgb, var(--color-black) 12%, transparent);
+  box-shadow: var(--eb-shadow-raised-content);
   font-family: var(--eb-font-family);
-  font-size: var(--scale-00);
-  line-height: var(--line-normal);
+  font-size: var(--eb-font-size-body);
+  line-height: var(--eb-line-height-normal);
 }
 
 .tooltipLabel {
-  padding-block-end: calc(var(--size-2) / 2);
-  border-block-end: var(--size-px) solid var(--eb-color-muted);
-  font-weight: var(--weight-semibold);
+  padding-block-end: calc(var(--eb-size-2) / 2);
+  border-block-end: var(--eb-border-width) solid var(--eb-color-muted);
+  font-weight: var(--eb-font-weight-semibold);
 }
 
 .tooltipList {
   display: grid;
-  gap: calc(var(--size-2) / 2);
-  margin: var(--size-2) 0 0;
+  gap: calc(var(--eb-size-2) / 2);
+  margin: var(--eb-size-2) 0 0;
 }
 
 .tooltipRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--size-4);
+  gap: var(--eb-size-4);
 }
 
 .tooltipRow dt {
   display: flex;
   align-items: center;
-  gap: var(--size-2);
+  gap: var(--eb-size-2);
   color: var(--eb-color-text);
 }
 
 .tooltipRow dd {
   margin: 0;
   font-variant-numeric: tabular-nums;
-  font-weight: var(--weight-semibold);
+  font-weight: var(--eb-font-weight-semibold);
 }
 
 .tooltipMarker,
 .legendMarker {
   display: inline-block;
   flex: none;
-  width: var(--size-2);
-  height: var(--size-2);
+  width: var(--eb-size-2);
+  height: var(--eb-size-2);
   border-radius: 50%;
 }
 
@@ -96,24 +96,24 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: var(--size-2) var(--size-4);
-  margin: var(--size-4) 0 0;
-  padding: var(--size-4) 0 0;
-  border-block-start: var(--size-px) solid var(--eb-color-muted);
+  gap: var(--eb-size-2) var(--eb-size-4);
+  margin: var(--eb-size-4) 0 0;
+  padding: var(--eb-size-4) 0 0;
+  border-block-start: var(--eb-border-width) solid var(--eb-color-muted);
   color: var(--eb-color-text);
-  font-size: var(--scale-00);
-  line-height: var(--line-normal);
+  font-size: var(--eb-font-size-body);
+  line-height: var(--eb-line-height-normal);
   list-style: none;
 }
 
 .legendItem {
   display: inline-flex;
   align-items: center;
-  gap: var(--size-2);
+  gap: var(--eb-size-2);
 }
 
 .legendItem strong {
   color: var(--eb-color-text);
   font-variant-numeric: tabular-nums;
-  font-weight: var(--weight-semibold);
+  font-weight: var(--eb-font-weight-semibold);
 }

@@ -2,9 +2,20 @@
 
 Reusable React components by Early Bird, built with TypeScript and CSS Modules.
 
-> [!WARNING]
-> **Status: Alpha.** The component library is under active development. Component APIs, styling,
-> and design tokens may change before 1.0.
+> [!NOTE]
+> **Status: Beta.** The public API is stabilizing. Breaking changes are still possible before 1.0,
+> but they will be called out in the changelog rather than shipped silently.
+
+## Requirements
+
+- **React** 19.2 or later (React 19 only).
+- **ESM only.** The package ships no CommonJS build.
+- **Browsers:** the current and previous release of Chrome, Edge, Firefox, and Safari. The styles
+  rely on `color-mix()` and CSS custom properties, so browsers without them are unsupported.
+- **Accessibility target:** WCAG 2.2 Level AA. Interactive controls meet the 3:1 non-text contrast
+  and 24×24px target-size minimums, and chart series meet 3:1 in distinct lightness tiers. Charts
+  still separate series by color and legend rather than by shape or dash pattern, so keep the
+  legend visible and do not rely on color as the sole cue in your own labeling.
 
 ## Install
 
@@ -31,7 +42,6 @@ pnpm add @fontsource-variable/karla
 ```tsx
 import "@fontsource-variable/karla";
 import {
-  BarChart,
   Button,
   ButtonIcon,
   Checkbox,
@@ -49,12 +59,10 @@ import {
   InputAction,
   InputGroup,
   InputIcon,
-  LineChart,
   Menu,
   MenuContent,
   MenuItem,
   MenuTrigger,
-  PieChart,
   Radio,
   RadioGroup,
   Select,
@@ -175,6 +183,18 @@ adornments need to sit beside it. `SelectLeadingIcon` and
 `ComboboxLeadingIcon` provide the same leading-icon composition for selection
 controls. `Textarea` extends the native textarea props.
 
+`CardTitle` renders an `h2` by default. Set `as` to the heading level that fits the
+surrounding document outline so cards do not break the page's heading order:
+
+```tsx
+<Card>
+  <CardHeader>
+    <CardTitle as="h3">Recent activity</CardTitle>
+  </CardHeader>
+  <CardContent>...</CardContent>
+</Card>
+```
+
 ## Overlays
 
 Dialog and Drawer include themed backdrops, surfaces, titles, descriptions, triggers,
@@ -227,8 +247,40 @@ the shared tokens can import the standalone entry:
 ```
 
 `@byearlybird/components/style.css` already includes these tokens, so apps using the
-components should import only the component stylesheet. The standalone token entry
-contains the public theme values and the Pollen primitives used by the library.
+components should import only the component stylesheet.
+
+Every custom property the library defines is prefixed `--eb-` and every one of them is
+supported public API. Read them, compose them in `calc()`, or override them — they are
+meant to be built on, not just themed. Because the library declares them at
+`:where(:root)`, an application's own `:root` rule always wins without specificity tricks.
+
+```css
+.my-toolbar {
+  gap: var(--eb-size-2);
+  padding: var(--eb-size-3) var(--eb-size-4);
+  font-size: var(--eb-font-size-body);
+  border-block-end: var(--eb-border-width) solid var(--eb-color-border);
+}
+```
+
+### The token contract
+
+| Group      | Tokens                                                                                                                                                                                                 |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Layout     | `--eb-border-width`, `--eb-size-1` … `--eb-size-10` (each step is 4px)                                                                                                                                 |
+| Typography | `--eb-font-family`, `--eb-font-size-body`, `--eb-font-size-title`, `--eb-font-weight-regular`, `--eb-font-weight-semibold`, `--eb-line-height-none`, `--eb-line-height-normal`                         |
+| Color      | `--eb-color-primary`, `--eb-color-primary-text`, `--eb-color-background`, `--eb-color-text`, `--eb-color-text-muted`, `--eb-color-border`, `--eb-color-muted`, `--eb-color-danger`, `--eb-color-scrim` |
+| Charts     | `--eb-chart-series-1`, `--eb-chart-series-2`, `--eb-chart-series-3`                                                                                                                                    |
+| Shape      | `--eb-radius-surface`, `--eb-radius-input`, `--eb-radius-button`                                                                                                                                       |
+| Elevation  | `--eb-shadow-raised-content`, `--eb-shadow-elevated-content`                                                                                                                                           |
+| Motion     | `--eb-motion-duration`, `--eb-motion-easing-standard`, `--eb-motion-easing-out`                                                                                                                        |
+
+**Compatibility policy.** Adding a token is a minor release. Renaming or removing one, or
+changing what it means, is a breaking change and will appear in the changelog. Adjusting a
+token's _value_ — a shade, a duration — is a minor release, so pin the value yourself if
+your design depends on an exact number. The set is enforced by `tests/tokens.test.ts`,
+which fails the build if a token is dropped, renamed, or added without being documented
+here.
 
 ```css
 :root {
@@ -237,8 +289,10 @@ contains the public theme values and the Pollen primitives used by the library.
   --eb-color-background: #faf9f6;
   --eb-color-text: #252523;
   --eb-color-text-muted: color-mix(in srgb, var(--eb-color-text) 65%, transparent);
-  --eb-color-border: #b8b5ad;
+  --eb-color-border: #939088;
   --eb-color-muted: #e3e1da;
+  --eb-color-danger: #b91c1c;
+  --eb-color-scrim: #000;
   --eb-font-family: "Karla Variable", "Karla", ui-sans-serif, system-ui, sans-serif;
   --eb-radius-surface: 2px;
   --eb-radius-input: 9999px;
@@ -249,10 +303,21 @@ contains the public theme values and the Pollen primitives used by the library.
 }
 ```
 
+Use `--eb-color-danger` for error and destructive states; it is the border color the
+Input and Textarea error styles already use. `--eb-color-scrim` is the base color for
+modal backdrops and is intentionally black in both themes — compose it with `color-mix()`
+rather than overriding it to a theme color.
+
 Use `--eb-color-text-muted` for secondary content such as timestamps,
 metadata, and supporting icons. It derives a translucent color from the active
 text color, so it follows both light and dark themes while preserving the color
 of the surface beneath it. Use `--eb-color-muted` for muted surfaces instead.
+
+> [!IMPORTANT]
+> Because `--eb-color-text-muted` is translucent, its contrast depends on whatever sits
+> behind it. Against the default background it measures 4.77:1 in light mode and 5.89:1
+> in dark mode. If you override `--eb-color-text` or `--eb-color-background`, or place
+> muted text on a `--eb-color-muted` surface, re-check it against the 4.5:1 minimum.
 
 The standard motion duration is the default for control feedback, visual-state
 changes, and larger surface or shape transitions. Pair it with the standard easing
@@ -296,9 +361,17 @@ tricks.
 
 ## Charts
 
+Charts ship from a separate entry so applications that do not render charts never pull
+Recharts into their bundle:
+
+```tsx
+import { BarChart, LineChart, PieChart } from "@byearlybird/components/charts";
+```
+
 The library includes opinionated line, bar, and pie charts powered by Recharts. Each chart
 is responsive, supports light and dark themes, and uses the existing component color
-tokens by default.
+tokens by default. `@byearlybird/components/style.css` covers both entries, so there is no
+separate chart stylesheet to import.
 
 ```tsx
 const data = [
@@ -338,8 +411,27 @@ const data = [
 />;
 ```
 
-Set a series `color` or pass a `colors` array to `PieChart` when a product-specific
-palette is needed. CSS color values, including application theme variables, are
+Series are colored from `--eb-chart-series-1` through `--eb-chart-series-3`, cycling if a
+chart has more series than that. Each one meets the 3:1 non-text contrast minimum against
+the default background in both themes, and the three sit in distinct lightness tiers so
+they stay separable in grayscale and for red-green color vision deficiency.
+
+Override them to match a product palette:
+
+```css
+:root {
+  --eb-chart-series-1: #1d4ed8;
+  --eb-chart-series-2: #0e7490;
+  --eb-chart-series-3: #b45309;
+}
+```
+
+If you do, keep each color at 3:1 or better against your chart background and vary
+lightness as well as hue — a palette that differs only by hue collapses for a
+meaningful share of users.
+
+Set a series `color` or pass a `colors` array to `PieChart` when a single chart needs to
+depart from the palette. CSS color values, including application theme variables, are
 supported.
 
 ## Develop
@@ -367,11 +459,13 @@ The package build is written to `dist/`, and the static Storybook site is writte
 
 ## Publish
 
-Authenticate with npm, choose a new version, then publish:
+Authenticate with npm, choose a new version, then publish under the `beta` dist-tag so
+prereleases never become `latest`:
 
 ```bash
 vp dlx bumpp
-pnpm publish
+pnpm publish --tag beta
 ```
 
-The package is configured for public scoped publishing.
+The package is configured for public scoped publishing. CI runs `vp check`, `vp test`,
+and the workspace build on every push and pull request; publishing stays manual.

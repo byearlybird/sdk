@@ -39,7 +39,7 @@ export default defineConfig({
   },
   pack: {
     copy: [{ from: "src/styles/tokens.css", rename: "tokens.css" }],
-    entry: ["src/index.ts"],
+    entry: ["src/index.ts", "src/charts.ts"],
     dts: {
       tsgo: true,
     },

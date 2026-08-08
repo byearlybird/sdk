@@ -2,7 +2,7 @@
   position: fixed;
   z-index: 0;
   inset: 0;
-  background: color-mix(in srgb, var(--color-black) 50%, transparent);
+  background: color-mix(in srgb, var(--eb-color-scrim) 50%, transparent);
   opacity: 1;
   transition: opacity var(--eb-motion-duration) var(--eb-motion-easing-standard);
 }
@@ -21,28 +21,28 @@
   justify-content: center;
   box-sizing: border-box;
   overflow-y: auto;
-  padding: var(--size-4);
+  padding: var(--eb-size-4);
   pointer-events: none;
 }
 
 .popup {
   position: relative;
   box-sizing: border-box;
-  width: calc(100% - (var(--size-4) * 2));
-  max-width: calc(var(--size-10) * 10);
-  max-height: calc(100dvh - (var(--size-4) * 2));
+  width: calc(100% - (var(--eb-size-4) * 2));
+  max-width: calc(var(--eb-size-10) * 10);
+  max-height: calc(100dvh - (var(--eb-size-4) * 2));
   overflow-y: auto;
-  padding: var(--size-4);
-  border: var(--size-px) solid var(--eb-color-border);
+  padding: var(--eb-size-4);
+  border: var(--eb-border-width) solid var(--eb-color-border);
   border-radius: var(--eb-radius-surface);
   outline: 0;
   color: var(--eb-color-text);
   background: var(--eb-color-background);
   font-family: var(--eb-font-family);
-  font-size: var(--scale-00);
+  font-size: var(--eb-font-size-body);
   font-style: normal;
-  font-weight: var(--weight-regular);
-  line-height: var(--line-normal);
+  font-weight: var(--eb-font-weight-regular);
+  line-height: var(--eb-line-height-normal);
   pointer-events: auto;
   transform-origin: center;
   transition:
@@ -60,20 +60,20 @@
   margin: 0;
   color: var(--eb-color-text);
   font-family: var(--eb-font-family);
-  font-size: var(--scale-2);
+  font-size: var(--eb-font-size-title);
   font-style: normal;
-  font-weight: var(--weight-semibold);
-  line-height: var(--line-normal);
+  font-weight: var(--eb-font-weight-semibold);
+  line-height: var(--eb-line-height-normal);
 }
 
 .description {
-  margin: var(--size-2) 0 0;
+  margin: var(--eb-size-2) 0 0;
   color: var(--eb-color-text);
   font-family: var(--eb-font-family);
-  font-size: var(--scale-00);
+  font-size: var(--eb-font-size-body);
   font-style: normal;
-  font-weight: var(--weight-regular);
-  line-height: var(--line-normal);
+  font-weight: var(--eb-font-weight-regular);
+  line-height: var(--eb-line-height-normal);
   opacity: 0.75;
 }
 

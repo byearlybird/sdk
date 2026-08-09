@@ -3,6 +3,7 @@ import { createDatabaseReact } from "@byearlybird/db-react";
 import { opfsStorageAdapter } from "@byearlybird/db/opfs";
 import { boolean, object, string } from "@byearlybird/schema";
 import type { InferOutput } from "@byearlybird/schema";
+import { demoEncryption } from "./encryption";
 
 const todoSchema = object({
   completed: boolean(),
@@ -18,6 +19,7 @@ export const { DatabaseProvider, useDatabase, useSuspenseQuery } =
   createDatabaseReact<TodoDatabase>();
 
 export const database = createDatabase<TodoDatabase>({
-  name: "early-bird-todos",
+  // A newly imported setup key gets a separate local database and a fresh sync checkpoint.
+  name: `early-bird-todos-${demoEncryption.keyId}`,
   storage: opfsStorageAdapter,
 });

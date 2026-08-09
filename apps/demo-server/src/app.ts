@@ -1,5 +1,5 @@
-import { validateSyncChange } from "@byearlybird/sync";
-import type { SyncChange } from "@byearlybird/sync";
+import { validateEncryptedSyncRecord } from "@byearlybird/sync/crypto";
+import type { EncryptedSyncRecord } from "@byearlybird/sync/crypto";
 import {
   createLatestSyncState,
   mergeServerChanges,
@@ -12,13 +12,13 @@ import type { SyncStorage } from "./storage.js";
 
 const stateKey = "sync-state";
 
-export async function createApp(storage: SyncStorage): Promise<Hono> {
+export function createApp(storage: SyncStorage): Hono {
   const app = new Hono();
   const stored = storage.getItem(stateKey);
   let state =
     stored === null
-      ? createLatestSyncState<SyncChange>()
-      : restoreLatestSyncState(stored, validateSyncChange);
+      ? createLatestSyncState<EncryptedSyncRecord>()
+      : restoreLatestSyncState(stored, validateEncryptedSyncRecord);
   let pushQueue = Promise.resolve();
 
   app.use("*", cors());
@@ -57,7 +57,7 @@ export async function createApp(storage: SyncStorage): Promise<Hono> {
   return app;
 }
 
-function validatePushBody(value: unknown): readonly SyncChange[] {
+function validatePushBody(value: unknown): readonly EncryptedSyncRecord[] {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
     throw new TypeError("A sync push body must be an object.");
   }
@@ -65,5 +65,5 @@ function validatePushBody(value: unknown): readonly SyncChange[] {
   if (!Array.isArray(changes)) {
     throw new TypeError("A sync push body must contain a changes array.");
   }
-  return changes.map(validateSyncChange);
+  return changes.map(validateEncryptedSyncRecord);
 }

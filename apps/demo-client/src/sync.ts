@@ -1,6 +1,9 @@
 import { createSynchronizer } from "@byearlybird/db";
 import type { SyncPullPage, SyncTransport } from "@byearlybird/sync";
+import { decryptSyncRecord, encryptSyncChange } from "@byearlybird/sync/crypto";
+import type { EncryptedSyncRecord } from "@byearlybird/sync/crypto";
 import { database } from "./database";
+import { demoEncryption } from "./encryption";
 
 const relayUrl = "http://localhost:3001";
 const appDomain = "com.byearlybird.demo";
@@ -12,11 +15,33 @@ const transport: SyncTransport = {
     url.searchParams.set("limit", String(limit));
     if (cursor !== null) url.searchParams.set("cursor", cursor);
     const response = await request(url);
-    return response.json() as Promise<SyncPullPage>;
+    const page = (await response.json()) as SyncPullPage<EncryptedSyncRecord>;
+    const key = await demoEncryption.key;
+    const changes = await Promise.all(
+      page.changes.map(async (record) => {
+        if (record.keyId !== demoEncryption.keyId) {
+          throw new Error(
+            "This browser has a different demo setup key. Import the key shown by the other browser.",
+          );
+        }
+        return decryptSyncRecord(record, { key });
+      }),
+    );
+    return { changes, cursor: page.cursor, hasMore: page.hasMore };
   },
   push: async ({ changes }) => {
+    const key = await demoEncryption.key;
+    const encryptedChanges = await Promise.all(
+      changes.map((change) =>
+        encryptSyncChange(change, {
+          appDomain,
+          key,
+          keyId: demoEncryption.keyId,
+        }),
+      ),
+    );
     await request(new URL(`${syncPath}/push`, relayUrl), {
-      body: JSON.stringify({ changes }),
+      body: JSON.stringify({ changes: encryptedChanges }),
       headers: { "content-type": "application/json" },
       method: "POST",
     });
@@ -32,14 +57,7 @@ export function startDemoSync(): void {
     });
   }
 
-  async function pushPendingChanges(): Promise<void> {
-    const changes = await database.getPendingChanges(100);
-    if (changes.length === 0) return;
-    await transport.push({ changes });
-    await database.acknowledgeChanges(changes.map(({ changeId }) => changeId));
-  }
-
-  database.onChange(() => report(pushPendingChanges()));
+  database.onChange(() => report(synchronizer.sync()));
   window.setInterval(() => report(synchronizer.sync()), 5_000);
   report(synchronizer.sync());
 }

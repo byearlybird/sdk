@@ -1,4 +1,4 @@
-import type { SyncChange } from "@byearlybird/sync";
+import type { EncryptedSyncRecord } from "@byearlybird/sync/crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -24,15 +24,15 @@ describe("demo sync relay", () => {
   it("persists pushed changes across a restart and pages through them by cursor", async () => {
     const directory = await createTemporaryDirectory();
     const storage = createSyncStorage(directory);
-    const app = await createApp(storage);
-    const first = createChange("task-1", 1, "First");
-    const second = createChange("task-2", 2, "Second");
+    const app = createApp(storage);
+    const first = createChange("task-1", 1);
+    const second = createChange("task-2", 2);
 
     await expect(push(app, domainA, [first, second])).resolves.toMatchObject({ status: 204 });
     await expect(push(app, domainA, [first])).resolves.toMatchObject({ status: 204 });
 
     storage.close();
-    const reopened = await createApp(createSyncStorage(directory));
+    const reopened = createApp(createSyncStorage(directory));
     const firstPage = await pull(reopened, domainA, null, 1);
     expect(firstPage).toEqual({ changes: [first], cursor: "1", hasMore: true });
     await expect(pull(reopened, domainA, firstPage.cursor, 1)).resolves.toEqual({
@@ -43,8 +43,8 @@ describe("demo sync relay", () => {
   });
 
   it("serves each app domain the changes pushed to its own path", async () => {
-    const app = await createApp(createSyncStorage(await createTemporaryDirectory()));
-    const change = createChange("task-1", 1, "First");
+    const app = createApp(createSyncStorage(await createTemporaryDirectory()));
+    const change = createChange("task-1", 1);
     await push(app, domainA, [change]);
 
     await expect(pull(app, domainA, null, 10)).resolves.toMatchObject({ changes: [change] });
@@ -52,7 +52,7 @@ describe("demo sync relay", () => {
   });
 
   it("answers requests without an app domain or a usable body with a client error", async () => {
-    const app = await createApp(createSyncStorage(await createTemporaryDirectory()));
+    const app = createApp(createSyncStorage(await createTemporaryDirectory()));
 
     await expect(app.request("/api/v1/apps//sync/pull")).resolves.toMatchObject({ status: 404 });
     await expect(
@@ -61,6 +61,25 @@ describe("demo sync relay", () => {
     await expect(
       app.request(`${syncPath(domainA)}/push`, {
         body: JSON.stringify({ changes: "not-an-array" }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      }),
+    ).resolves.toMatchObject({ status: 400 });
+    await expect(
+      app.request(`${syncPath(domainA)}/push`, {
+        body: JSON.stringify({
+          changes: [
+            {
+              changeId: "plaintext-change",
+              collection: "todos",
+              deleted: false,
+              entity: { title: "The server must not accept this" },
+              entityId: "task-1",
+              format: 1,
+              version: { counter: 1, replicaId: "test-replica" },
+            },
+          ],
+        }),
         headers: { "content-type": "application/json" },
         method: "POST",
       }),
@@ -84,22 +103,23 @@ function syncPath(appDomain: string): string {
   return `/api/v1/apps/${encodeURIComponent(appDomain)}/sync`;
 }
 
-function createChange(id: string, counter: number, title: string): SyncChange {
+function createChange(id: string, counter: number): EncryptedSyncRecord {
   return {
+    appDomain: domainA,
     changeId: `change-${id}-${counter}`,
     collection: "todos",
-    deleted: false,
-    entity: { completed: false, createdAt: "2026-01-01", title },
     entityId: id,
     format: 1,
+    keyId: "demo-key",
+    payload: "1.example-nonce.example-ciphertext",
     version: { counter, replicaId: "test-replica" },
   };
 }
 
 async function push(
-  app: Awaited<ReturnType<typeof createApp>>,
+  app: ReturnType<typeof createApp>,
   appDomain: string,
-  changes: readonly SyncChange[],
+  changes: readonly EncryptedSyncRecord[],
 ) {
   return app.request(`${syncPath(appDomain)}/push`, {
     body: JSON.stringify({ changes }),
@@ -109,11 +129,11 @@ async function push(
 }
 
 async function pull(
-  app: Awaited<ReturnType<typeof createApp>>,
+  app: ReturnType<typeof createApp>,
   appDomain: string,
   cursor: string | null,
   limit: number,
-): Promise<{ changes: SyncChange[]; cursor: string; hasMore: boolean }> {
+): Promise<{ changes: EncryptedSyncRecord[]; cursor: string; hasMore: boolean }> {
   const query = new URLSearchParams({ limit: String(limit) });
   if (cursor !== null) query.set("cursor", cursor);
   const response = await app.request(`${syncPath(appDomain)}/pull?${query.toString()}`);

@@ -3,15 +3,17 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vite-plus/test";
-import { createStorage } from "unstorage";
-import fsLiteDriver from "unstorage/drivers/fs-lite";
 import { createApp } from "../src/app.js";
+import { createSqliteSyncStorage } from "../src/storage.js";
+import type { SqliteSyncStorage } from "../src/storage.js";
 
 const domainA = "com.byearlybird.demo";
 const domainB = "com.example.other";
 const temporaryDirectories: string[] = [];
+const storages: SqliteSyncStorage[] = [];
 
 afterEach(async () => {
+  for (const storage of storages.splice(0, storages.length)) storage.close();
   const directories = temporaryDirectories.splice(0, temporaryDirectories.length);
   await Promise.all(directories.map(async (directory) => rm(directory, { recursive: true })));
 });
@@ -21,13 +23,15 @@ afterEach(async () => {
 describe("demo sync relay", () => {
   it("persists pushed changes across a restart and pages through them by cursor", async () => {
     const directory = await createTemporaryDirectory();
-    const app = await createApp(createSyncStorage(directory));
+    const storage = createSyncStorage(directory);
+    const app = await createApp(storage);
     const first = createChange("task-1", 1, "First");
     const second = createChange("task-2", 2, "Second");
 
     await expect(push(app, domainA, [first, second])).resolves.toMatchObject({ status: 204 });
     await expect(push(app, domainA, [first])).resolves.toMatchObject({ status: 204 });
 
+    storage.close();
     const reopened = await createApp(createSyncStorage(directory));
     const firstPage = await pull(reopened, domainA, null, 1);
     expect(firstPage).toEqual({ changes: [first], cursor: "1", hasMore: true });
@@ -71,7 +75,9 @@ async function createTemporaryDirectory(): Promise<string> {
 }
 
 function createSyncStorage(directory: string) {
-  return createStorage<object>({ driver: fsLiteDriver({ base: directory }) });
+  const storage = createSqliteSyncStorage(join(directory, "sync.sqlite"));
+  storages.push(storage);
+  return storage;
 }
 
 function syncPath(appDomain: string): string {

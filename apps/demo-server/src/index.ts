@@ -1,13 +1,13 @@
 import { serve } from "@hono/node-server";
+import { mkdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { createStorage } from "unstorage";
-import fsLiteDriver from "unstorage/drivers/fs-lite";
 import { createApp } from "./app.js";
+import { createSqliteSyncStorage } from "./storage.js";
 
 const port = 3001;
-const storage = createStorage<object>({
-  driver: fsLiteDriver({ base: fileURLToPath(new URL("../data", import.meta.url)) }),
-});
+const dataDirectory = fileURLToPath(new URL("../data", import.meta.url));
+await mkdir(dataDirectory, { recursive: true });
+const storage = createSqliteSyncStorage(`${dataDirectory}/sync.sqlite`);
 const app = await createApp(storage);
 
 serve({ fetch: app.fetch, port }, (info) => {

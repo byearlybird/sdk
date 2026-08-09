@@ -29,5 +29,5 @@ vp run dev
 ```
 
 Open the client URL in two browsers. Local mutations get pushed immediately, and each browser pulls
-changes every five seconds. If you want to clear the shared state, stop the server and delete
-`apps/demo-server/data`.
+changes every five seconds. The relay stores its state in `apps/demo-server/data/sync.sqlite`. If you
+want to clear the shared state, stop the server and delete `apps/demo-server/data`.

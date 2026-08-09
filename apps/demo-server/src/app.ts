@@ -8,13 +8,13 @@ import {
 } from "@byearlybird/sync/server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import type { Storage } from "unstorage";
+import type { SyncStorage } from "./storage.js";
 
 const stateKey = "sync-state";
 
-export async function createApp(storage: Storage<object>): Promise<Hono> {
+export async function createApp(storage: SyncStorage): Promise<Hono> {
   const app = new Hono();
-  const stored = await storage.getItem(stateKey);
+  const stored = storage.getItem(stateKey);
   let state =
     stored === null
       ? createLatestSyncState<SyncChange>()
@@ -43,10 +43,10 @@ export async function createApp(storage: Storage<object>): Promise<Hono> {
   app.post("/api/v1/apps/:appDomain/sync/push", async (context) => {
     const appDomain = context.req.param("appDomain");
     const changes = validatePushBody(await context.req.json<unknown>());
-    const push = pushQueue.then(async () => {
+    const push = pushQueue.then(() => {
       const nextState = mergeServerChanges(state, appDomain, changes);
       if (nextState === state) return;
-      await storage.setItem(stateKey, nextState);
+      storage.setItem(stateKey, nextState);
       state = nextState;
     });
     pushQueue = push.catch(() => undefined);

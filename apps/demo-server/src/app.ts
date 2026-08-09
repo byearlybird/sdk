@@ -1,25 +1,11 @@
 import { validateEncryptedSyncRecord } from "@byearlybird/sync/crypto";
 import type { EncryptedSyncRecord } from "@byearlybird/sync/crypto";
-import {
-  createLatestSyncState,
-  mergeServerChanges,
-  pullLatestSyncRecords,
-  restoreLatestSyncState,
-} from "@byearlybird/sync/server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { SyncStorage } from "./storage.js";
 
-const stateKey = "sync-state";
-
 export function createApp(storage: SyncStorage): Hono {
   const app = new Hono();
-  const stored = storage.getItem(stateKey);
-  let state =
-    stored === null
-      ? createLatestSyncState<EncryptedSyncRecord>()
-      : restoreLatestSyncState(stored, validateEncryptedSyncRecord);
-  let pushQueue = Promise.resolve();
 
   app.use("*", cors());
 
@@ -32,7 +18,7 @@ export function createApp(storage: SyncStorage): Hono {
 
   // Routing guarantees a nonempty app domain, so the handlers never have to check for one.
   app.get("/api/v1/apps/:appDomain/sync/pull", (context) => {
-    const page = pullLatestSyncRecords(state, {
+    const page = storage.pull({
       appDomain: context.req.param("appDomain"),
       cursor: context.req.query("cursor") ?? null,
       limit: Number(context.req.query("limit") ?? 100),
@@ -43,14 +29,7 @@ export function createApp(storage: SyncStorage): Hono {
   app.post("/api/v1/apps/:appDomain/sync/push", async (context) => {
     const appDomain = context.req.param("appDomain");
     const changes = validatePushBody(await context.req.json<unknown>());
-    const push = pushQueue.then(() => {
-      const nextState = mergeServerChanges(state, appDomain, changes);
-      if (nextState === state) return;
-      storage.setItem(stateKey, nextState);
-      state = nextState;
-    });
-    pushQueue = push.catch(() => undefined);
-    await push;
+    storage.push(appDomain, changes);
     return context.body(null, 204);
   });
 

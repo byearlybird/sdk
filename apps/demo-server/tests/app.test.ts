@@ -2,6 +2,7 @@ import type { EncryptedSyncRecord } from "@byearlybird/sync/crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { DatabaseSync } from "node:sqlite";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 import { createApp } from "../src/app.js";
 import { createSqliteSyncStorage } from "../src/storage.js";
@@ -18,8 +19,6 @@ afterEach(async () => {
   await Promise.all(directories.map(async (directory) => rm(directory, { recursive: true })));
 });
 
-// Merge and pagination rules are covered by @byearlybird/sync. These cover the relay's own
-// job: the HTTP contract, persistence across a restart, and error mapping.
 describe("demo sync relay", () => {
   it("persists pushed changes across a restart and pages through them by cursor", async () => {
     const directory = await createTemporaryDirectory();
@@ -49,6 +48,70 @@ describe("demo sync relay", () => {
 
     await expect(pull(app, domainA, null, 10)).resolves.toMatchObject({ changes: [change] });
     await expect(pull(app, domainB, null, 10)).resolves.toMatchObject({ changes: [] });
+  });
+
+  it("stores only winning versions and advances the cursor only for accepted changes", async () => {
+    const app = createApp(createSyncStorage(await createTemporaryDirectory()));
+    const first = createChange("task-1", 2);
+    const stale = createChange("task-1", 1);
+    const winner = createChange("task-1", 3);
+
+    await push(app, domainA, [first]);
+    await push(app, domainA, [stale, first]);
+    await expect(pull(app, domainA, null, 10)).resolves.toEqual({
+      changes: [first],
+      cursor: "1",
+      hasMore: false,
+    });
+
+    await push(app, domainA, [winner]);
+    await expect(pull(app, domainA, "1", 10)).resolves.toEqual({
+      changes: [winner],
+      cursor: "2",
+      hasMore: false,
+    });
+    await push(app, domainA, [winner]);
+    await expect(pull(app, domainA, "2", 10)).resolves.toEqual({
+      changes: [],
+      cursor: "2",
+      hasMore: false,
+    });
+  });
+
+  it("rolls back an entire push when one change is invalid", async () => {
+    const app = createApp(createSyncStorage(await createTemporaryDirectory()));
+    const first = createChange("task-1", 1);
+    await push(app, domainA, [first]);
+
+    const acceptedBeforeFailure = createChange("task-2", 2);
+    const reusedChangeId = { ...createChange("task-3", 3), changeId: first.changeId };
+    await expect(
+      push(app, domainA, [acceptedBeforeFailure, reusedChangeId]),
+    ).resolves.toMatchObject({ status: 400 });
+    await expect(pull(app, domainA, "1", 10)).resolves.toEqual({
+      changes: [],
+      cursor: "1",
+      hasMore: false,
+    });
+  });
+
+  it("reports unreadable SQLite rows as server errors", async () => {
+    const directory = await createTemporaryDirectory();
+    const storage = createSyncStorage(directory);
+    const app = createApp(storage);
+    await push(app, domainA, [createChange("task-1", 1)]);
+    storage.close();
+
+    const database = new DatabaseSync(join(directory, "sync.sqlite"));
+    database
+      .prepare("UPDATE sync_records SET version_counter = ?")
+      .run(BigInt(Number.MAX_SAFE_INTEGER) + 1n);
+    database.close();
+
+    const reopened = createApp(createSyncStorage(directory));
+    const response = await reopened.request(`${syncPath(domainA)}/pull?limit=10`);
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toEqual({ error: "Internal Server Error" });
   });
 
   it("answers requests without an app domain or a usable body with a client error", async () => {

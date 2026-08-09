@@ -11,10 +11,11 @@ GET  /api/v1/apps/com.byearlybird.demo/sync/pull?cursor=12&limit=100
 POST /api/v1/apps/com.byearlybird.demo/sync/push
 ```
 
-The relay stores one latest record for each app domain, collection, and entity ID. A newer Lamport
-version replaces the old record and receives a new server sequence. Pull cursors use that server
-sequence, not the Lamport version. Tombstones remain in storage forever, which keeps an older live
-record from bringing deleted data back.
+The relay stores one latest SQLite row for each app domain, collection, and entity ID. A newer
+Lamport version replaces the old row and receives a new global server sequence. Pulls use an index
+on app domain and sequence, so the relay reads only the requested page instead of loading the full
+sync data set into memory. Tombstones remain in storage forever, which keeps an older live record
+from bringing deleted data back.
 
 The relay still sees routing and conflict-resolution metadata: app domain, collection, entity ID,
 change ID, version, and key ID. Those fields are authenticated by the encrypted payload, so clients

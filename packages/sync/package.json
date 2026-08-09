@@ -21,7 +21,6 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./crypto": "./dist/crypto.mjs",
-    "./server": "./dist/server.mjs",
     "./package.json": "./package.json"
   },
   "publishConfig": {

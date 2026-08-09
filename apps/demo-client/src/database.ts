@@ -20,6 +20,6 @@ export const { DatabaseProvider, useDatabase, useSuspenseQuery } =
 
 export const database = createDatabase<TodoDatabase>({
   // A newly imported setup key gets a separate local database and a fresh sync checkpoint.
-  name: `early-bird-todos-${demoEncryption.keyId}`,
+  name: `early-bird-todos-${demoEncryption.setupKey.slice(0, 16)}`,
   storage: opfsStorageAdapter,
 });

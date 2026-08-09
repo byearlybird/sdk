@@ -1,7 +1,5 @@
-import { compareVersions } from "@byearlybird/sync";
-import type { SyncPullPage, Version } from "@byearlybird/sync";
-import type { EncryptedSyncRecord } from "@byearlybird/sync/crypto";
-import { createPullCursor, parsePullCursor } from "@byearlybird/sync/server";
+import { compareVersions, createPullCursor, parsePullCursor } from "@byearlybird/sync";
+import type { SyncPullPage, SyncRecord, Version } from "@byearlybird/sync";
 import { DatabaseSync } from "node:sqlite";
 
 export interface SyncStorage {
@@ -9,8 +7,8 @@ export interface SyncStorage {
     appDomain: string;
     cursor: string | null;
     limit: number;
-  }): SyncPullPage<EncryptedSyncRecord>;
-  push(appDomain: string, changes: readonly EncryptedSyncRecord[]): void;
+  }): SyncPullPage<SyncRecord>;
+  push(appDomain: string, changes: readonly SyncRecord[]): void;
 }
 
 export interface SqliteSyncStorage extends SyncStorage {
@@ -34,7 +32,6 @@ export function createSqliteSyncStorage(filename: string): SqliteSyncStorage {
       change_id TEXT NOT NULL,
       version_counter INTEGER NOT NULL,
       version_replica_id TEXT NOT NULL,
-      key_id TEXT NOT NULL,
       payload TEXT NOT NULL,
       sequence INTEGER NOT NULL UNIQUE,
       PRIMARY KEY (app_domain, collection, entity_id),
@@ -69,15 +66,13 @@ export function createSqliteSyncStorage(filename: string): SqliteSyncStorage {
       change_id,
       version_counter,
       version_replica_id,
-      key_id,
       payload,
       sequence
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT (app_domain, collection, entity_id) DO UPDATE SET
       change_id = excluded.change_id,
       version_counter = excluded.version_counter,
       version_replica_id = excluded.version_replica_id,
-      key_id = excluded.key_id,
       payload = excluded.payload,
       sequence = excluded.sequence
   `);
@@ -87,7 +82,6 @@ export function createSqliteSyncStorage(filename: string): SqliteSyncStorage {
       change_id,
       collection,
       entity_id,
-      key_id,
       payload,
       sequence,
       version_counter,
@@ -100,7 +94,7 @@ export function createSqliteSyncStorage(filename: string): SqliteSyncStorage {
   pullRecords.setReadBigInts(true);
   let closed = false;
 
-  function storeChange(appDomain: string, incoming: EncryptedSyncRecord): void {
+  function storeChange(appDomain: string, incoming: SyncRecord): void {
     if (incoming.appDomain !== appDomain) {
       throw new TypeError("A sync record does not match the requested app domain.");
     }
@@ -136,7 +130,6 @@ export function createSqliteSyncStorage(filename: string): SqliteSyncStorage {
       incoming.changeId,
       incoming.version.counter,
       incoming.version.replicaId,
-      incoming.keyId,
       incoming.payload,
       sequence,
     );
@@ -190,14 +183,13 @@ export function createSqliteSyncStorage(filename: string): SqliteSyncStorage {
   };
 }
 
-function readStoredRecord(row: Record<string, unknown>): EncryptedSyncRecord {
+function readStoredRecord(row: Record<string, unknown>): SyncRecord {
   return {
     appDomain: readString(row, "app_domain"),
     changeId: readString(row, "change_id"),
     collection: readString(row, "collection"),
     entityId: readString(row, "entity_id"),
     format: 1,
-    keyId: readString(row, "key_id"),
     payload: readString(row, "payload"),
     version: readVersion(row),
   };

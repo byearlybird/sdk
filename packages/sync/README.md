@@ -1,10 +1,7 @@
 # Sync by Early Bird
 
-Shared synchronization rules for Early Bird apps, databases, and servers.
-
-The root package contains the plaintext protocol. Encryption and server storage helpers live behind
-separate entry points, so using the core package does not turn on encryption or add a key-management
-requirement.
+Shared synchronization types and rules for Early Bird apps, databases, and servers. Encryption is
+optional and lives behind a separate entry point.
 
 > [!NOTE]
 > **Status: Beta.** Breaking changes are still possible before 1.0.
@@ -15,7 +12,7 @@ requirement.
 pnpm add @byearlybird/sync
 ```
 
-## Plaintext sync
+## Changes and records
 
 A `SyncChange` is either a complete live entity or a tombstone. Both forms include a stable change
 ID and a Lamport version:
@@ -38,22 +35,26 @@ Lamport versions are ordered first by `counter`, then by `replicaId`. This gives
 stable order when two replicas edit the same entity at the same logical time. A newer tombstone wins
 over older live data, and a newer live version can intentionally recreate an entity.
 
-The root entry point exports:
+`SyncChange` is the decoded client-side form. `SyncRecord` is the wire and server-storage form. Its
+entity state is always an opaque string payload, whether that string contains JSON or ciphertext:
 
-- Lamport clock creation, ticking, observation, comparison, and validation.
-- Live change, tombstone, change ID, and version types.
-- Change validation for wire data, including JSON-safe entity values.
-- Pull request, pull page, push request, and transport types.
+```ts
+import { decodeSyncRecord, encodeSyncChange } from "@byearlybird/sync";
 
-`@byearlybird/db` uses this plaintext protocol. It still owns SQLite, its local outbox, checkpoints,
-applying remote changes, and `createSynchronizer`.
+const record = encodeSyncChange(change, "com.example.tasks");
+const decoded = decodeSyncRecord(record);
+```
+
+The root entry point also validates both forms and exports Lamport clock, transport, and pull cursor
+helpers. `@byearlybird/db` owns its local SQLite tables, outbox, checkpoints, applying decoded
+changes, and `createSynchronizer`.
 
 ## Optional encryption
 
-`@byearlybird/sync/crypto` converts a normal change into an `EncryptedSyncRecord` with an opaque
-payload string. It uses AES-GCM through Web Crypto. The app domain, collection, entity ID, change
-ID, version, and key ID remain visible so a server can route records, resolve versions, and handle
-retries. The live entity or tombstone state is encrypted.
+`@byearlybird/sync/crypto` produces the same `SyncRecord` shape, but encrypts its payload with
+AES-GCM through Web Crypto. The app domain, collection, entity ID, change ID, and version remain
+visible so a server can route records, resolve versions, and handle retries. The live entity or
+tombstone state is encrypted.
 
 ```ts
 import { decryptSyncRecord, encryptSyncChange } from "@byearlybird/sync/crypto";
@@ -66,57 +67,27 @@ const key = await crypto.subtle.generateKey({ length: 256, name: "AES-GCM" }, fa
 const encrypted = await encryptSyncChange(change, {
   appDomain: "com.example.tasks",
   key,
-  keyId: "main-key",
 });
 
 const plaintext = await decryptSyncRecord(encrypted, { key });
 ```
 
 The visible fields are authenticated as additional data. Changing the app domain, entity address,
-version, change ID, or key ID makes decryption fail. Each encryption uses a fresh nonce.
+version, or change ID makes decryption fail. Each encryption uses a fresh nonce.
 
 The package does not store, send, recover, or rotate keys. The application owns those choices. DB
 does not depend on this entry point, so encryption remains fully opt-in.
 
-## Latest-state server storage
+## Server storage
 
-`@byearlybird/sync/server` provides pure helpers for a relay that stores one record for each
-`(app domain, collection, entity ID)`:
+The package does not provide an in-memory server implementation. A server should query and update
+its database directly, storing one opaque `SyncRecord` for each `(app domain, collection, entity
+ID)`. It can compare the visible Lamport versions with `compareVersions` and page by its own durable
+sequence using `createPullCursor` and `parsePullCursor`.
 
-```ts
-import {
-  createLatestSyncState,
-  mergeServerChange,
-  pullLatestSyncRecords,
-} from "@byearlybird/sync/server";
-
-let state = createLatestSyncState();
-state = mergeServerChange(state, "com.example.tasks", change).state;
-
-const page = pullLatestSyncRecords(state, {
-  appDomain: "com.example.tasks",
-  cursor: null,
-  limit: 100,
-});
-```
-
-When an incoming Lamport version wins, it replaces the stored record and receives a new server
-sequence. Repeated or older changes do not receive a sequence. The pull cursor is the server
-sequence encoded as a canonical decimal string. It is separate from the Lamport clock because a
-late offline client can upload an older Lamport counter after the server has already seen newer
-counters elsewhere.
-
-The sequence uses decimal strings and `bigint`, so it does not stop at JavaScript's safe integer
-limit. Helpers are also provided to create, parse, increment, and validate cursors, and to validate
-saved latest-state data after a restart.
-
-The helpers are storage-neutral. A real server should persist the returned state atomically and
-derive the app domain from trusted authentication or authorization data. It should keep tombstones
-forever unless it introduces a separate, safe garbage-collection protocol. Storage therefore grows
-with distinct entity IDs, not with every operation over time.
-
-The helpers work with plaintext `SyncChange` values and with encrypted records because both expose
-the metadata needed for version comparison and routing.
+The pull cursor is separate from the Lamport clock because a late offline client can upload an older
+Lamport counter after the server has already seen newer counters elsewhere. Cursor helpers use
+decimal strings and `bigint`, so the sequence does not stop at JavaScript's safe integer limit.
 
 ## License
 

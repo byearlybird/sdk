@@ -21,3 +21,15 @@ export type SyncTransport = Readonly<{
   /** Resolves only after every change is durably accepted. Retries must be idempotent by change ID. */
   push(request: SyncPushRequest): Promise<void>;
 }>;
+
+export function createPullCursor(sequence: bigint): string {
+  if (sequence < 0n) throw new TypeError("A server sequence cannot be negative.");
+  return sequence.toString();
+}
+
+export function parsePullCursor(cursor: unknown): bigint {
+  if (typeof cursor !== "string" || !/^(0|[1-9][0-9]*)$/u.test(cursor)) {
+    throw new TypeError("A synchronization pull cursor must be a canonical decimal string.");
+  }
+  return BigInt(cursor);
+}

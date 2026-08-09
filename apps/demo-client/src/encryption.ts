@@ -5,7 +5,6 @@ const material = loadOrCreateKey();
 
 export const demoEncryption = {
   key: importKey(material.keyBytes),
-  keyId: material.keyId,
   setupKey: material.setupKey,
 } as const;
 
@@ -19,37 +18,20 @@ function loadOrCreateKey() {
   if (stored !== null) return parseSetupKey(stored);
 
   const keyBytes = crypto.getRandomValues(new Uint8Array(keyByteLength));
-  const keyId = crypto.randomUUID();
-  const setupKey = JSON.stringify({ key: encodeHex(keyBytes), keyId });
+  const setupKey = encodeHex(keyBytes);
   localStorage.setItem(storageKey, setupKey);
-  return { keyBytes, keyId, setupKey };
+  return { keyBytes, setupKey };
 }
 
 function parseSetupKey(value: string) {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(value.trim()) as unknown;
-  } catch {
-    throw new TypeError("Enter a valid Early Bird demo setup key.");
-  }
-  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new TypeError("Enter a valid Early Bird demo setup key.");
-  }
-
-  const { key, keyId } = parsed as Record<string, unknown>;
-  if (
-    typeof key !== "string" ||
-    !/^[0-9a-f]{64}$/u.test(key) ||
-    typeof keyId !== "string" ||
-    keyId.length === 0
-  ) {
+  const setupKey = value.trim();
+  if (!/^[0-9a-f]{64}$/u.test(setupKey)) {
     throw new TypeError("Enter a valid Early Bird demo setup key.");
   }
 
   return {
-    keyBytes: Uint8Array.from(key.matchAll(/../gu), ([byte]) => Number.parseInt(byte, 16)),
-    keyId,
-    setupKey: JSON.stringify({ key, keyId }),
+    keyBytes: Uint8Array.from(setupKey.matchAll(/../gu), ([byte]) => Number.parseInt(byte, 16)),
+    setupKey,
   };
 }
 

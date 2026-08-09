@@ -1,8 +1,8 @@
 # Demo sync relay
 
 A local Hono server that relays encrypted [`@byearlybird/sync`](../../packages/sync) records between
-demo clients. It accepts only the `EncryptedSyncRecord` envelope from `@byearlybird/sync/crypto`;
-to-do contents and deletion state live inside its opaque AES-GCM payload.
+demo clients. It stores the shared `SyncRecord` envelope; to-do contents and deletion state live
+inside its opaque AES-GCM payload.
 
 The app domain is a required path segment, so every request names the data it is reaching for:
 
@@ -18,8 +18,8 @@ sync data set into memory. Tombstones remain in storage forever, which keeps an 
 from bringing deleted data back.
 
 The relay still sees routing and conflict-resolution metadata: app domain, collection, entity ID,
-change ID, version, and key ID. Those fields are authenticated by the encrypted payload, so clients
-will reject server-side tampering.
+change ID, and version. Those fields are authenticated by the encrypted payload, so clients will
+reject server-side tampering.
 
 > [!WARNING]
 > This relay is for local demos only. It has no authentication, authorization, rate limits, or

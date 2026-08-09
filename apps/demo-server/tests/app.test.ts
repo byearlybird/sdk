@@ -1,4 +1,4 @@
-import type { EncryptedSyncRecord } from "@byearlybird/sync/crypto";
+import type { SyncRecord } from "@byearlybird/sync";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -166,14 +166,13 @@ function syncPath(appDomain: string): string {
   return `/api/v1/apps/${encodeURIComponent(appDomain)}/sync`;
 }
 
-function createChange(id: string, counter: number): EncryptedSyncRecord {
+function createChange(id: string, counter: number): SyncRecord {
   return {
     appDomain: domainA,
     changeId: `change-${id}-${counter}`,
     collection: "todos",
     entityId: id,
     format: 1,
-    keyId: "demo-key",
     payload: "1.example-nonce.example-ciphertext",
     version: { counter, replicaId: "test-replica" },
   };
@@ -182,7 +181,7 @@ function createChange(id: string, counter: number): EncryptedSyncRecord {
 async function push(
   app: ReturnType<typeof createApp>,
   appDomain: string,
-  changes: readonly EncryptedSyncRecord[],
+  changes: readonly SyncRecord[],
 ) {
   return app.request(`${syncPath(appDomain)}/push`, {
     body: JSON.stringify({ changes }),
@@ -196,7 +195,7 @@ async function pull(
   appDomain: string,
   cursor: string | null,
   limit: number,
-): Promise<{ changes: EncryptedSyncRecord[]; cursor: string; hasMore: boolean }> {
+): Promise<{ changes: SyncRecord[]; cursor: string; hasMore: boolean }> {
   const query = new URLSearchParams({ limit: String(limit) });
   if (cursor !== null) query.set("cursor", cursor);
   const response = await app.request(`${syncPath(appDomain)}/pull?${query.toString()}`);

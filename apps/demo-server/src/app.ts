@@ -1,5 +1,5 @@
-import { validateEncryptedSyncRecord } from "@byearlybird/sync/crypto";
-import type { EncryptedSyncRecord } from "@byearlybird/sync/crypto";
+import { validateSyncRecord } from "@byearlybird/sync";
+import type { SyncRecord } from "@byearlybird/sync";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { SyncStorage } from "./storage.js";
@@ -36,7 +36,7 @@ export function createApp(storage: SyncStorage): Hono {
   return app;
 }
 
-function validatePushBody(value: unknown): readonly EncryptedSyncRecord[] {
+function validatePushBody(value: unknown): readonly SyncRecord[] {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
     throw new TypeError("A sync push body must be an object.");
   }
@@ -44,5 +44,5 @@ function validatePushBody(value: unknown): readonly EncryptedSyncRecord[] {
   if (!Array.isArray(changes)) {
     throw new TypeError("A sync push body must contain a changes array.");
   }
-  return changes.map(validateEncryptedSyncRecord);
+  return changes.map(validateSyncRecord);
 }

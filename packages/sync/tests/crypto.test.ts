@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 import type { SyncChange } from "../src/change.ts";
-import {
-  decryptSyncRecord,
-  encryptSyncChange,
-  validateEncryptedSyncRecord,
-} from "../src/crypto.ts";
+import { decryptSyncRecord, encryptSyncChange } from "../src/crypto.ts";
+import { validateSyncRecord } from "../src/record.ts";
 
 describe("encrypted sync records", () => {
   it("round trips live entities and tombstones", async () => {
@@ -22,12 +19,10 @@ describe("encrypted sync records", () => {
     const encryptedLive = await encryptSyncChange(live, {
       appDomain: "com.example.tasks",
       key,
-      keyId: "main-key",
     });
     const encryptedTombstone = await encryptSyncChange(tombstone, {
       appDomain: "com.example.tasks",
       key,
-      keyId: "main-key",
     });
 
     expect(encryptedLive).not.toHaveProperty("deleted");
@@ -38,7 +33,7 @@ describe("encrypted sync records", () => {
 
   it("uses a fresh nonce for each encryption", async () => {
     const key = await createKey();
-    const options = { appDomain: "com.example.tasks", key, keyId: "main-key" };
+    const options = { appDomain: "com.example.tasks", key };
     const first = await encryptSyncChange(createLiveChange(), options);
     const second = await encryptSyncChange(createLiveChange(), options);
 
@@ -50,7 +45,6 @@ describe("encrypted sync records", () => {
     const encrypted = await encryptSyncChange(createLiveChange(), {
       appDomain: "com.example.tasks",
       key,
-      keyId: "main-key",
     });
 
     await expect(decryptSyncRecord(encrypted, { key: await createKey() })).rejects.toThrow();
@@ -60,19 +54,18 @@ describe("encrypted sync records", () => {
   });
 
   it("rejects malformed encrypted records before decryption", () => {
-    expect(() => validateEncryptedSyncRecord({ payload: "bad" })).toThrow("unsupported format");
+    expect(() => validateSyncRecord({ payload: "bad" })).toThrow("unsupported format");
     expect(() =>
-      validateEncryptedSyncRecord({
+      validateSyncRecord({
         appDomain: "com.example.tasks",
         changeId: "change-task-1",
         collection: "tasks",
         entityId: "task-1",
         format: 1,
-        keyId: "main-key",
         payload: "",
         version: { counter: 1, replicaId: "replica-a" },
       }),
-    ).toThrow("encrypted payload");
+    ).toThrow("payload");
   });
 });
 

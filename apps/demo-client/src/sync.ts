@@ -1,7 +1,6 @@
 import { createSynchronizer } from "@byearlybird/db";
-import type { SyncPullPage, SyncTransport } from "@byearlybird/sync";
+import type { SyncPullPage, SyncRecord, SyncTransport } from "@byearlybird/sync";
 import { decryptSyncRecord, encryptSyncChange } from "@byearlybird/sync/crypto";
-import type { EncryptedSyncRecord } from "@byearlybird/sync/crypto";
 import { database } from "./database";
 import { demoEncryption } from "./encryption";
 
@@ -15,17 +14,10 @@ const transport: SyncTransport = {
     url.searchParams.set("limit", String(limit));
     if (cursor !== null) url.searchParams.set("cursor", cursor);
     const response = await request(url);
-    const page = (await response.json()) as SyncPullPage<EncryptedSyncRecord>;
+    const page = (await response.json()) as SyncPullPage<SyncRecord>;
     const key = await demoEncryption.key;
     const changes = await Promise.all(
-      page.changes.map(async (record) => {
-        if (record.keyId !== demoEncryption.keyId) {
-          throw new Error(
-            "This browser has a different demo setup key. Import the key shown by the other browser.",
-          );
-        }
-        return decryptSyncRecord(record, { key });
-      }),
+      page.changes.map((record) => decryptSyncRecord(record, { key })),
     );
     return { changes, cursor: page.cursor, hasMore: page.hasMore };
   },
@@ -36,7 +28,6 @@ const transport: SyncTransport = {
         encryptSyncChange(change, {
           appDomain,
           key,
-          keyId: demoEncryption.keyId,
         }),
       ),
     );

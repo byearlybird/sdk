@@ -1,0 +1,27 @@
+{
+  "projectId": "16202fce-2c90-41a0-b470-1c22342688cc",
+  "pkg": "@byearlybird/components",
+  "globalName": "EarlyBirdComponents",
+  "shape": "storybook",
+  "storybookStatic": ".design-sync/sb-reference",
+  "storybookConfigDir": "packages/components/.storybook",
+  "buildCmd": "pnpm -F \"@byearlybird/components...\" build",
+  "entry": "packages/components/dist/index.mjs",
+  "extraEntries": ["./dist/charts.mjs"],
+  "readmeHeader": ".design-sync/conventions.md",
+  "cssEntry": "./dist/style.css",
+  "extraFonts": ["./node_modules/@fontsource-variable/karla/index.css"],
+  "titleMap": {
+    "Bar": "BarChart",
+    "Line": "LineChart",
+    "Pie": "PieChart"
+  },
+  "overrides": {
+    "BarChart": { "cardMode": "single", "primaryStory": "Default" },
+    "LineChart": { "cardMode": "single", "primaryStory": "Default" },
+    "PieChart": { "cardMode": "single", "primaryStory": "Default" },
+    "Card": { "cardMode": "column" },
+    "Combobox": { "cardMode": "single", "primaryStory": "Default" },
+    "Select": { "cardMode": "single", "primaryStory": "Default" }
+  }
+}

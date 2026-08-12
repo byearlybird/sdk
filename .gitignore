@@ -33,6 +33,15 @@ apps/demo-server/data
 
 # AI agent worktrees
 .claude/worktrees/
+
+# design-sync (transient; durable state under .design-sync/ IS committed)
+.design-sync/sb-reference/
+.design-sync/learnings/
+.design-sync/.cache/
+.design-sync/*.log
+.design-sync/node_modules
+.ds-sync/
+ds-bundle/
 !.vscode/
 !.vscode/settings.json
 !.vscode/extensions.json

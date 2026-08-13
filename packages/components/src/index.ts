@@ -125,6 +125,16 @@ export type {
 export { Radio, RadioGroup } from "./components/Radio/Radio.tsx";
 export type { RadioGroupProps, RadioProps } from "./components/Radio/Radio.tsx";
 export {
+  SegmentedControl,
+  SegmentedControlItem,
+} from "./components/SegmentedControl/SegmentedControl.tsx";
+export type {
+  SegmentedControlItemProps,
+  SegmentedControlProps,
+  SegmentedControlSize,
+  SegmentedControlVariant,
+} from "./components/SegmentedControl/SegmentedControl.tsx";
+export {
   Select,
   SelectContent,
   SelectGroup,
@@ -154,5 +164,13 @@ export type {
 } from "./components/Select/Select.tsx";
 export { Switch } from "./components/Switch/Switch.tsx";
 export type { SwitchProps } from "./components/Switch/Switch.tsx";
+export { TabBar, TabBarItem } from "./components/TabBar/TabBar.tsx";
+export type { TabBarItemProps, TabBarProps } from "./components/TabBar/TabBar.tsx";
 export { Textarea } from "./components/Textarea/Textarea.tsx";
 export type { TextareaProps, TextareaVariant } from "./components/Textarea/Textarea.tsx";
+export { ToggleButton } from "./components/ToggleButton/ToggleButton.tsx";
+export type {
+  ToggleButtonProps,
+  ToggleButtonSize,
+  ToggleButtonTone,
+} from "./components/ToggleButton/ToggleButton.tsx";

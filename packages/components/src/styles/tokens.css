@@ -25,6 +25,7 @@
   --eb-color-border: #939088;
   --eb-color-muted: #e3e1da;
   --eb-color-danger: #b91c1c;
+  --eb-color-accent: #5f8aa6;
   --eb-color-scrim: #000;
   --eb-chart-series-1: #252523;
   --eb-chart-series-2: #5f8aa6;
@@ -49,6 +50,7 @@
   --eb-color-border: #939088;
   --eb-color-muted: #e3e1da;
   --eb-color-danger: #b91c1c;
+  --eb-color-accent: #5f8aa6;
   --eb-chart-series-1: #252523;
   --eb-chart-series-2: #5f8aa6;
   --eb-chart-series-3: #b91c1c;
@@ -65,6 +67,7 @@
     --eb-color-border: #7a7873;
     --eb-color-muted: #484743;
     --eb-color-danger: #e86f66;
+    --eb-color-accent: #9ec8d8;
     --eb-chart-series-1: #f2efe8;
     --eb-chart-series-2: #9ec8d8;
     --eb-chart-series-3: #e86f66;
@@ -81,6 +84,7 @@
   --eb-color-border: #7a7873;
   --eb-color-muted: #484743;
   --eb-color-danger: #e86f66;
+  --eb-color-accent: #9ec8d8;
   --eb-chart-series-1: #f2efe8;
   --eb-chart-series-2: #9ec8d8;
   --eb-chart-series-3: #e86f66;

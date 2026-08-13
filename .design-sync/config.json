@@ -22,6 +22,8 @@
     "PieChart": { "cardMode": "single", "primaryStory": "Default" },
     "Card": { "cardMode": "column" },
     "Combobox": { "cardMode": "single", "primaryStory": "Default" },
-    "Select": { "cardMode": "single", "primaryStory": "Default" }
+    "Select": { "cardMode": "single", "primaryStory": "Default" },
+    "SegmentedControl": { "cardMode": "column" },
+    "TabBar": { "cardMode": "column" }
   }
 }

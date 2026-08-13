@@ -81,12 +81,51 @@ and every chart preview renders blank. `recharts` is an external in `dist/` and 
 
 Applied via `cfg.overrides` (presentation-only — targeted `preview-rebuild.mjs`, grades carry):
 
-- `wide` → `cardMode: "column"`: `BarChart`, `LineChart`, `PieChart`, `Card`
-- `escape` (fixed/portal) → `cardMode: "single"` + `primaryStory: "Default"`: `Combobox`, `Select`
+- `wide` → `cardMode: "column"`: `Card`, `SegmentedControl`, `TabBar`
+- `escape` (fixed/portal) → `cardMode: "single"` + `primaryStory: "Default"`: `Combobox`, `Select`,
+  and the three charts
+
+The charts started on `column` and moved to `single`: validate flags them `wide`, but compare
+additionally reports `[PORTAL?]` (recharts tooltips portal out of the cell). `single` satisfies both and
+costs nothing there — each chart has exactly one story.
 
 `Dialog`, `Drawer`, and `Menu` are portal components but did **not** flag — their stories render in the
 closed/trigger-only state. If a future story opens one by default, expect an `escape` flag and give it
 `cardMode: "single"` too.
+
+## Components imported back from Claude Design (2026-08-12)
+
+`TabBar`/`TabBarItem`, `SegmentedControl`/`SegmentedControlItem`, `ToggleButton` and the
+`--eb-color-accent` token were specified in a staging template the user authored in the Design project
+(`templates/new-components-staging/NewComponentsStaging.dc.html`, sourced from their "Geo by Early
+Bird" work) and implemented here. **That template is not produced by this build — never let it into a
+delete list.** The atomic-path plan's `deletes` came verbatim from `upload.deletePaths` (empty), which
+is what preserved it; a hand-written `templates/**` delete glob would destroy the user's own file.
+
+The sync is one-directional (code → design). There is no automated design → code path; that import was
+manual implementation from the template's spec.
+
+**The staged spec had a real accessibility bug, and the repo's own tests caught it.** It specified
+unselected segmented-control labels as `--eb-color-text-muted` on the `--eb-color-muted` track. That
+measures **4.34:1**, under the 4.5:1 WCAG AA floor, and `@storybook/addon-a11y` (configured
+`a11y: { test: "error" }`) failed three stories on it. Fixed by giving unselected segments full
+`--eb-color-text`; selection is carried by the raised fill instead of by dimming everything else.
+**Do not "restore" the muted colour** — it will fail `vp test` again.
+
+Deliberate API departures from the template's `<pre>` sketches (they were notes, not a contract — the
+repo's idiom won):
+
+- `ToggleButton` uses base-ui `Toggle` semantics (`pressed`/`defaultPressed`/`onPressedChange`), not
+  `selected`/`onClick`, and named `size` values mapped to tokens rather than a raw `size={36}` pixel prop.
+- `SegmentedControl` is compound (`SegmentedControlItem`) rather than an `options`/`icons` array, matching
+  every other composite in this DS and base-ui's ToggleGroup. Its `value`/`defaultValue` are **arrays**.
+- `TabBar` takes the FAB through an `action` slot instead of `onAdd`/`addLabel`/`addIcon` — the template
+  itself said the FAB should be a `Button size="icon" variant="primary"`, so it is composed, not rebuilt.
+
+**New stories use assertion-only `play()` functions on purpose.** No clicks that change visible state, so
+these previews match their storybook reference exactly and grade `match` — instead of inheriting the
+`close` divergence that every pre-existing component carries (see the interaction-test section above).
+Keep it that way when adding stories.
 
 ## Re-sync risks
 

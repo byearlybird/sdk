@@ -1,0 +1,88 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--eb-radius-button);
+  background: var(--eb-color-muted);
+}
+
+.root[data-size="large"] {
+  gap: var(--eb-size-1);
+  padding: var(--eb-size-1);
+}
+
+.root[data-full-width] {
+  display: flex;
+  width: 100%;
+}
+
+.item {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  gap: var(--eb-size-2);
+  padding: 7px var(--eb-size-4);
+  border: 0;
+  border-radius: var(--eb-radius-button);
+  /*
+   * Full-contrast text, not --eb-color-text-muted: muted text on the
+   * --eb-color-muted track measures 4.34:1, below the 4.5:1 WCAG AA floor.
+   * Selection is carried by the raised fill below, not by dimming the rest.
+   */
+  color: var(--eb-color-text);
+  background: transparent;
+  font-family: var(--eb-font-family);
+  font-size: 0.8125rem;
+  font-weight: var(--eb-font-weight-semibold);
+  line-height: var(--eb-line-height-none);
+  white-space: nowrap;
+  cursor: default;
+  transition:
+    color var(--eb-motion-duration) var(--eb-motion-easing-standard),
+    background var(--eb-motion-duration) var(--eb-motion-easing-standard);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.item > svg {
+  width: 1em;
+  height: 1em;
+}
+
+.item:focus-visible {
+  outline: 3px solid var(--eb-color-primary);
+  outline-offset: 2px;
+}
+
+.item[data-disabled] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.root[data-size="large"] .item {
+  padding: 11px var(--eb-size-4);
+  font-size: var(--eb-font-size-body);
+}
+
+.root[data-full-width] .item {
+  flex: 1;
+}
+
+.root[data-variant="neutral"] .item[data-pressed] {
+  background: var(--eb-color-background);
+  box-shadow: var(--eb-shadow-raised-content);
+}
+
+.root[data-variant="primary"] .item[data-pressed] {
+  color: var(--eb-color-primary-text);
+  background: var(--eb-color-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item {
+    transition: none;
+  }
+}

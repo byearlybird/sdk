@@ -25,6 +25,8 @@ import {
   MenuTrigger,
   Radio,
   RadioGroup,
+  SegmentedControl,
+  SegmentedControlItem,
   Select,
   SelectContent,
   SelectItem,
@@ -33,7 +35,10 @@ import {
   SelectTrigger,
   SelectValue,
   Switch,
+  TabBar,
+  TabBarItem,
   Textarea,
+  ToggleButton,
 } from "../src/index.ts";
 import { BarChart, LineChart, PieChart } from "../src/charts.ts";
 
@@ -106,6 +111,15 @@ test("components render on the server", () => {
           </SelectList>
         </SelectContent>
       </Select>
+      <SegmentedControl aria-label="Filter" defaultValue={["all"]}>
+        <SegmentedControlItem value="all">All</SegmentedControlItem>
+        <SegmentedControlItem value="pinned">Pinned</SegmentedControlItem>
+      </SegmentedControl>
+      <TabBar label="Sections">
+        <TabBarItem active label="Home" />
+        <TabBarItem label="Journal" />
+      </TabBar>
+      <ToggleButton aria-label="Confirm" defaultPressed tone="accent" />
       <Textarea aria-label="Message" name="message" />
       <label>
         <Switch defaultChecked name="compact-mode" />

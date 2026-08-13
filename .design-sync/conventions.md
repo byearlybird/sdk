@@ -25,28 +25,38 @@ Every component accepts `className` and `style`. Both also accept a **function o
 (`className={(state) => …}`), and `render` swaps the underlying element — these come from Base UI
 underneath, so state-driven styling and polymorphism work throughout.
 
-The complete token vocabulary (38, verbatim):
+The complete token vocabulary (39, verbatim):
 
-| Family     | Tokens                                                                                                                                                                                                 |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| color      | `--eb-color-primary`, `--eb-color-primary-text`, `--eb-color-background`, `--eb-color-text`, `--eb-color-text-muted`, `--eb-color-border`, `--eb-color-muted`, `--eb-color-danger`, `--eb-color-scrim` |
-| chart      | `--eb-chart-series-1`, `--eb-chart-series-2`, `--eb-chart-series-3`, `--eb-chart-height`                                                                                                               |
-| spacing    | `--eb-size-1` … `--eb-size-10` (4px → 40px, in 4px steps)                                                                                                                                              |
-| typography | `--eb-font-family`, `--eb-font-size-body`, `--eb-font-size-title`, `--eb-font-weight-regular`, `--eb-font-weight-semibold`, `--eb-line-height-none`, `--eb-line-height-normal`                         |
-| radius     | `--eb-radius-surface`, `--eb-radius-input`, `--eb-radius-button`                                                                                                                                       |
-| shadow     | `--eb-shadow-raised-content`, `--eb-shadow-elevated-content`                                                                                                                                           |
-| border     | `--eb-border-width`                                                                                                                                                                                    |
-| motion     | `--eb-motion-duration`, `--eb-motion-easing-standard`, `--eb-motion-easing-out`                                                                                                                        |
+| Family     | Tokens                                                                                                                                                                                                                      |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| color      | `--eb-color-primary`, `--eb-color-primary-text`, `--eb-color-background`, `--eb-color-text`, `--eb-color-text-muted`, `--eb-color-border`, `--eb-color-muted`, `--eb-color-danger`, `--eb-color-accent`, `--eb-color-scrim` |
+| chart      | `--eb-chart-series-1`, `--eb-chart-series-2`, `--eb-chart-series-3`                                                                                                                                                         |
+| spacing    | `--eb-size-1` … `--eb-size-10` (4px → 40px, in 4px steps)                                                                                                                                                                   |
+| typography | `--eb-font-family`, `--eb-font-size-body`, `--eb-font-size-title`, `--eb-font-weight-regular`, `--eb-font-weight-semibold`, `--eb-line-height-none`, `--eb-line-height-normal`                                              |
+| radius     | `--eb-radius-surface`, `--eb-radius-input`, `--eb-radius-button`                                                                                                                                                            |
+| shadow     | `--eb-shadow-raised-content`, `--eb-shadow-elevated-content`                                                                                                                                                                |
+| border     | `--eb-border-width`                                                                                                                                                                                                         |
+| motion     | `--eb-motion-duration`, `--eb-motion-easing-standard`, `--eb-motion-easing-out`                                                                                                                                             |
 
 Use tokens for **every** color, space, radius and type decision — hardcoded hex values and pixel
 paddings will look off-brand and will not follow the theme into dark mode.
 
 ### Compound components
 
-`Card`, `Dialog`, `Drawer`, `Menu`, `Select`, `Combobox`, `Input` and `Radio` are **compositions**, not
-single elements — e.g. `Card` + `CardImage`/`CardHeader`/`CardTitle`/`CardContent`;
+`Card`, `Dialog`, `Drawer`, `Menu`, `Select`, `Combobox`, `Input`, `Radio`, `SegmentedControl` and
+`TabBar` are **compositions**, not single elements — e.g. `Card` +
+`CardImage`/`CardHeader`/`CardTitle`/`CardContent`;
 `Dialog` + `DialogTrigger`/`DialogContent`/`DialogTitle`/`DialogDescription`/`DialogClose`;
-`Input` + `InputGroup`/`InputIcon`/`InputAction`. Read the component's `.prompt.md` before composing.
+`Input` + `InputGroup`/`InputIcon`/`InputAction`;
+`SegmentedControl` + `SegmentedControlItem`; `TabBar` + `TabBarItem`.
+Read the component's `.prompt.md` before composing.
+
+`SegmentedControl` selects by `value`/`defaultValue`, which are **arrays** (it wraps a toggle group):
+`<SegmentedControl defaultValue={["all"]}>`. `TabBar` takes its floating action button through the
+`action` slot — pass a real `Button`, don't rebuild one:
+`<TabBar action={<Button size="icon" variant="primary" aria-label="New"><ButtonIcon><PlusIcon/></ButtonIcon></Button>}>`.
+`ToggleButton` is a circular icon toggle with `tone="neutral"|"primary"|"accent"`; it needs an
+`aria-label`, since the icon is its only content.
 
 **Overlays are closed by default.** `Dialog`, `Drawer`, `Menu`, `Select` and `Combobox` render only
 their trigger until opened. To show one open in a static design, pass `defaultOpen` to the root — the

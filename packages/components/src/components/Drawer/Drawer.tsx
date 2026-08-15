@@ -2,6 +2,7 @@ import { Drawer as BaseDrawer } from "@base-ui/react/drawer";
 import type { Ref } from "react";
 import { mergeClassName } from "../../utils/mergeClassName.ts";
 import type { WithRef } from "../../utils/withRef.ts";
+import type { ButtonVariant } from "../Button/Button.tsx";
 import buttonStyles from "../Button/Button.module.css";
 import styles from "./Drawer.module.css";
 
@@ -163,15 +164,21 @@ export function DrawerDescription({ className, ref, ...props }: DrawerDescriptio
   );
 }
 
-export type DrawerCloseProps = WithRef<BaseDrawer.Close.Props, HTMLButtonElement>;
+export interface DrawerCloseProps extends WithRef<BaseDrawer.Close.Props, HTMLButtonElement> {
+  /**
+   * Controls the visual prominence of the close button.
+   * @default "secondary"
+   */
+  variant?: ButtonVariant;
+}
 
-export function DrawerClose({ className, ref, ...props }: DrawerCloseProps) {
+export function DrawerClose({ className, ref, variant = "secondary", ...props }: DrawerCloseProps) {
   return (
     <BaseDrawer.Close
       {...props}
       ref={ref}
       className={mergeClassName<BaseDrawer.Close.State>(
-        [buttonStyles.button, buttonStyles.secondary],
+        [buttonStyles.button, buttonStyles[variant]],
         className,
       )}
     />

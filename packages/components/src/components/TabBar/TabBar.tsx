@@ -17,22 +17,35 @@ export interface TabBarProps extends ComponentPropsWithoutRef<"div"> {
    * @default "Primary"
    */
   label?: string;
+  /**
+   * Whether to pin the tab bar to the bottom of the viewport, inset from
+   * device safe areas. Disable to lay it out in-flow instead.
+   * @default true
+   */
+  fixed?: boolean;
 }
 
 /**
  * A pill-shaped navigation row with an optional trailing action, for mobile
- * bottom navigation. Children are `TabBarItem`s.
+ * bottom navigation. Children are `TabBarItem`s. Pinned to the bottom of the
+ * viewport by default; pass `fixed={false}` to lay it out in-flow instead.
  */
 export function TabBar({
   action,
   children,
   className,
+  fixed = true,
   label = "Primary",
   ref,
   ...props
 }: TabBarProps) {
   return (
-    <div {...props} ref={ref} className={clsx(styles.root, className)} data-slot="tab-bar">
+    <div
+      {...props}
+      ref={ref}
+      className={clsx(styles.root, fixed && styles.fixed, className)}
+      data-slot="tab-bar"
+    >
       <nav aria-label={label} className={styles.nav}>
         {children}
       </nav>

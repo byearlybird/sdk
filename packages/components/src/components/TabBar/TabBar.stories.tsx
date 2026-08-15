@@ -12,6 +12,7 @@ function ExampleTabBar({ action }: { action?: boolean }) {
   return (
     <div style={{ width: 380 }}>
       <TabBar
+        fixed={false}
         label="Sections"
         action={
           action ? (
@@ -59,4 +60,23 @@ export const Default: Story = {
 
 export const WithoutAction: Story = {
   render: () => <ExampleTabBar />,
+};
+
+export const PinnedToViewport: Story = {
+  parameters: {
+    layout: "fullscreen",
+  },
+  render: () => (
+    <TabBar label="Sections">
+      <TabBarItem active icon={<HouseIcon />} label="Home" />
+      <TabBarItem icon={<NotebookIcon />} label="Journal" />
+      <TabBarItem icon={<ListChecksIcon />} label="Habits" />
+    </TabBar>
+  ),
+  play: async ({ canvas }) => {
+    const nav = canvas.getByRole("navigation", { name: "Sections" });
+    const root = nav.closest('[data-slot="tab-bar"]');
+
+    await expect(root).toHaveStyle({ position: "fixed" });
+  },
 };

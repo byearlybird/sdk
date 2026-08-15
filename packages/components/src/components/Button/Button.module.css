@@ -53,6 +53,12 @@
   background: var(--eb-color-background);
 }
 
+.ghost {
+  border-color: transparent;
+  color: var(--eb-color-text-muted);
+  background: transparent;
+}
+
 .iconSize {
   width: var(--eb-size-10);
   padding-inline: 0;

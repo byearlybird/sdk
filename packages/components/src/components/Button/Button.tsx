@@ -3,7 +3,7 @@ import { clsx } from "clsx";
 import type { Ref } from "react";
 import styles from "./Button.module.css";
 
-export type ButtonVariant = "primary" | "secondary";
+export type ButtonVariant = "primary" | "secondary" | "ghost";
 export type ButtonSize = "default" | "icon";
 
 export interface ButtonProps extends Omit<BaseButton.Props, "ref"> {

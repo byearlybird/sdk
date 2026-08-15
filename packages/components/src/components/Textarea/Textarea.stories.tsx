@@ -56,3 +56,21 @@ export const Disabled: Story = {
     await expect(canvas.getByRole("textbox", { name: "Message" })).toBeDisabled();
   },
 };
+
+export const AutoResize: Story = {
+  args: {
+    autoResize: true,
+    maxHeight: 200,
+  },
+  play: async ({ canvas, userEvent }) => {
+    const textarea = canvas.getByRole("textbox", { name: "Message" });
+    const initialHeight = textarea.getBoundingClientRect().height;
+
+    await userEvent.type(
+      textarea,
+      "Line one\nLine two\nLine three\nLine four\nLine five\nLine six\nLine seven\nLine eight",
+    );
+
+    await expect(textarea.getBoundingClientRect().height).toBeGreaterThan(initialHeight);
+  },
+};

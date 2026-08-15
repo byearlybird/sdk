@@ -2,6 +2,7 @@ import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import type { Ref } from "react";
 import { mergeClassName } from "../../utils/mergeClassName.ts";
 import type { WithRef } from "../../utils/withRef.ts";
+import type { ButtonVariant } from "../Button/Button.tsx";
 import buttonStyles from "../Button/Button.module.css";
 import styles from "./Dialog.module.css";
 
@@ -130,15 +131,21 @@ export function DialogDescription({ className, ref, ...props }: DialogDescriptio
   );
 }
 
-export type DialogCloseProps = WithRef<BaseDialog.Close.Props, HTMLButtonElement>;
+export interface DialogCloseProps extends WithRef<BaseDialog.Close.Props, HTMLButtonElement> {
+  /**
+   * Controls the visual prominence of the close button.
+   * @default "secondary"
+   */
+  variant?: ButtonVariant;
+}
 
-export function DialogClose({ className, ref, ...props }: DialogCloseProps) {
+export function DialogClose({ className, ref, variant = "secondary", ...props }: DialogCloseProps) {
   return (
     <BaseDialog.Close
       {...props}
       ref={ref}
       className={mergeClassName<BaseDialog.Close.State>(
-        [buttonStyles.button, buttonStyles.secondary],
+        [buttonStyles.button, buttonStyles[variant]],
         className,
       )}
     />

@@ -26,6 +26,11 @@
   border-style: dotted;
 }
 
+.autoResize {
+  overflow: hidden;
+  resize: none;
+}
+
 .textarea::placeholder {
   color: var(--eb-color-text);
   opacity: 0.65;
